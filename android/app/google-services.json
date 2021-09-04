@@ -1,0 +1,146 @@
+{
+  "project_info": {
+    "project_number": "365058967814",
+    "firebase_url": "https://eshop-2210d.firebaseio.com",
+    "project_id": "eshop-2210d",
+    "storage_bucket": "eshop-2210d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:365058967814:android:f977c3b319218a439a7687",
+        "android_client_info": {
+          "package_name": "com.wrteam.admin_eshop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "365058967814-d7obt28vb93aka20tlds8grg79v88uqa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASvoiAu2X2-C-uMSKChK2UD7LDuXh5aEs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "365058967814-d7obt28vb93aka20tlds8grg79v88uqa.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "365058967814-6nrkjtfh0u9b3dgqvep9k70q1ncennak.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.wrteam.eshop",
+                "app_store_id": "123456789"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:365058967814:android:aaa2c8582fb6a9269a7687",
+        "android_client_info": {
+          "package_name": "com.wrteam.eshop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "365058967814-d9al9nqo5dda3t4ctodbdj45n7dld4kg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wrteam.eshop",
+            "certificate_hash": "7b1d45b3efc33b5db6e7228ba62b80cdc6f183ef"
+          }
+        },
+        {
+          "client_id": "365058967814-mg2bnh8ht3hv8hnuuled6hl46ib9150c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wrteam.eshop",
+            "certificate_hash": "c63fa09535ee639c1b4d0c0308b346262584c1cc"
+          }
+        },
+        {
+          "client_id": "365058967814-vqn7r83bvkd6e8tvh45g7ink8739gqao.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wrteam.eshop",
+            "certificate_hash": "b96b7f2480c10d3be7be45bf55137aeee9447d39"
+          }
+        },
+        {
+          "client_id": "365058967814-d7obt28vb93aka20tlds8grg79v88uqa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASvoiAu2X2-C-uMSKChK2UD7LDuXh5aEs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "365058967814-d7obt28vb93aka20tlds8grg79v88uqa.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "365058967814-6nrkjtfh0u9b3dgqvep9k70q1ncennak.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.wrteam.eshop",
+                "app_store_id": "123456789"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:365058967814:android:5ba25999f5e6717d9a7687",
+        "android_client_info": {
+          "package_name": "com.wrteam.eshop.deliveryboy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "365058967814-d7obt28vb93aka20tlds8grg79v88uqa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASvoiAu2X2-C-uMSKChK2UD7LDuXh5aEs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "365058967814-d7obt28vb93aka20tlds8grg79v88uqa.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "365058967814-6nrkjtfh0u9b3dgqvep9k70q1ncennak.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.wrteam.eshop",
+                "app_store_id": "123456789"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
