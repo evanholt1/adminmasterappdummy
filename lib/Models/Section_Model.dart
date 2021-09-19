@@ -1,18 +1,11 @@
 import 'package:admin_eshop/Helper/String.dart';
 
 class SectionModel {
-  String id,
-      title,
-      varientId,
-      qty,
-      productId,
-      perItemTotal,
-      perItemPrice,
-      style;
-  List<Product> productList;
-  List<Filter> filterList;
-  List<String> selectedId = [];
-  int offset, totalItem;
+  String? id, title, perItemTotal, perItemPrice, style, qty, productId, varientId;
+  List<Product>? productList;
+  List<Filter>? filterList;
+  List<String>? selectedId = [];
+  int? offset, totalItem;
 
   SectionModel(
       {this.id,
@@ -24,16 +17,13 @@ class SectionModel {
       this.perItemTotal,
       this.perItemPrice,
       this.style,
-
       this.totalItem,
       this.offset,
       this.selectedId,
       this.filterList});
 
   factory SectionModel.fromJson(Map<String, dynamic> parsedJson) {
-    List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List)
-        .map((data) => new Product.fromJson(data))
-        .toList();
+    List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List).map((data) => new Product.fromJson(data)).toList();
 
     var flist = (parsedJson[FILTERS] as List);
     List<Filter> filterList = [];
@@ -46,7 +36,6 @@ class SectionModel {
         id: parsedJson[ID],
         title: parsedJson[TITLE],
         style: parsedJson[STYLE],
-     
         productList: productList,
         offset: 0,
         totalItem: 0,
@@ -55,9 +44,7 @@ class SectionModel {
   }
 
   factory SectionModel.fromCart(Map<String, dynamic> parsedJson) {
-    List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List)
-        .map((data) => new Product.fromJson(data))
-        .toList();
+    List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List).map((data) => new Product.fromJson(data)).toList();
 
     return SectionModel(
         id: parsedJson[ID],
@@ -69,36 +56,20 @@ class SectionModel {
   }
 
   factory SectionModel.fromFav(Map<String, dynamic> parsedJson) {
-    List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List)
-        .map((data) => new Product.fromJson(data))
-        .toList();
+    List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List).map((data) => new Product.fromJson(data)).toList();
 
-    return SectionModel(
-        id: parsedJson[ID],
-        productId: parsedJson[PRODUCT_ID],
-        productList: productList);
+    return SectionModel(id: parsedJson[ID], productId: parsedJson[PRODUCT_ID], productList: productList);
   }
 }
 
 class Product {
-  String id,
-      name,
-      desc,
-      image,
-      catName,
-      type,
-      rating,
-      noOfRating,
-      attrIds,
-      tax,
-      categoryId,
-      shortDescription,stock;
-  List<String> otherImage;
-  List<Product_Varient> prVarientList;
-  List<Attribute> attributeList;
-  List<String> selectedId = [];
-  List<String> tagList = [];
-  String isFav,
+  String? id, name, desc, image, catName, type, rating, noOfRating, attrIds, tax, categoryId, shortDescription, stock;
+  List<String>? otherImage;
+  List<Product_Varient>? prVarientList;
+  List<Attribute>? attributeList;
+  List<String>? selectedId = [];
+  List<String>? tagList = [];
+  String? isFav,
       isReturnable,
       isCancelable,
       isPurchased,
@@ -115,11 +86,11 @@ class Product {
       warranty,
       gurantee;
 
-  bool isFavLoading = false, isFromProd = false;
-  int offset, totalItem, selVarient;
+  bool? isFavLoading = false, isFromProd = false;
+  int? offset, totalItem, selVarient;
 
-  List<Product> subList;
-  List<Filter> filterList;
+  List<Product>? subList;
+  List<Filter>? filterList;
 
   Product(
       {this.id,
@@ -160,19 +131,17 @@ class Product {
       this.video,
       this.videType,
       this.tagList,
-      this.warranty,this.stock,
+      this.warranty,
+      this.stock,
       this.gurantee});
 
   factory Product.fromJson(Map<String, dynamic> json) {
-    List<Product_Varient> varientList = (json[PRODUCT_VARIENT] as List)
-        .map((data) => new Product_Varient.fromJson(data))
-        .toList();
+    List<Product_Varient> varientList =
+        (json[PRODUCT_VARIENT] as List).map((data) => new Product_Varient.fromJson(data)).toList();
 
-    List<Attribute> attList = (json[ATTRIBUTES] as List)
-        .map((data) => new Attribute.fromJson(data))
-        .toList();
+    List<Attribute> attList = (json[ATTRIBUTES] as List).map((data) => new Attribute.fromJson(data)).toList();
 
-    var flist = (json[FILTERS] as List);
+    var flist = (json[FILTERS] != null ? json[FILTERS] as List : []);
     List<Filter> filterList = [];
     if (flist == null || flist.isEmpty)
       filterList = [];
@@ -182,41 +151,38 @@ class Product {
     List<String> other_image = List<String>.from(json[OTHER_IMAGE]);
     List<String> selected = [];
 
-  
-
     return new Product(
-        id: json[ID],
-        name: json[NAME],
-        desc: json[DESC],
-        image: json[IMAGE],
-        catName: json[CAT_NAME],
-        rating: json[RATING],
-        noOfRating: json[NO_OF_RATE],
-        stock: json[STOCK],
-        type: json[TYPE],
-        isFav: json[FAV].toString(),
-        isCancelable: json[ISCANCLEABLE],
-        availability: json[AVAILABILITY].toString(),
-        isPurchased: json[ISPURCHASED].toString(),
-        isReturnable: json[ISRETURNABLE],
-        otherImage: other_image,
-        prVarientList: varientList,
-        attributeList: attList,
-        filterList: filterList,
-        isFavLoading: false,
-        selVarient: 0,
-        attrIds: json[ATTR_VALUE],
-        madein: json[MADEIN],
-     
-        indicator: json[INDICATOR].toString(),
-        stockType: json[STOCKTYPE].toString(),
-        tax: json[TAX_PER],
-        total: json[TOTAL],
-        categoryId: json[CATID],
-        selectedId: selected,
-        totalAllow: json[TOTALALOOW],
-        cancleTill: json[CANCLE_TILL],
-      );
+      id: json[ID],
+      name: json[NAME],
+      desc: json[DESC],
+      image: json[IMAGE],
+      catName: json[CAT_NAME],
+      rating: json[RATING],
+      noOfRating: json[NO_OF_RATE],
+      stock: json[STOCK],
+      type: json[TYPE],
+      isFav: json[FAV].toString(),
+      isCancelable: json[ISCANCLEABLE],
+      availability: json[AVAILABILITY].toString(),
+      isPurchased: json[ISPURCHASED].toString(),
+      isReturnable: json[ISRETURNABLE],
+      otherImage: other_image,
+      prVarientList: varientList,
+      attributeList: attList,
+      filterList: filterList,
+      isFavLoading: false,
+      selVarient: 0,
+      attrIds: json[ATTR_VALUE],
+      madein: json[MADEIN],
+      indicator: json[INDICATOR].toString(),
+      stockType: json[STOCKTYPE].toString(),
+      tax: json[TAX_PER],
+      total: json[TOTAL],
+      categoryId: json[CATID],
+      selectedId: selected,
+      totalAllow: json[TOTALALOOW],
+      cancleTill: json[CANCLE_TILL],
+    );
   }
 
   factory Product.fromCat(Map<String, dynamic> parsedJson) {
@@ -233,7 +199,7 @@ class Product {
     );
   }
 
-  static List<Product> createSubList(List parsedJson) {
+  static List<Product>? createSubList(List? parsedJson) {
     if (parsedJson == null || parsedJson.isEmpty) return null;
 
     return parsedJson.map((data) => new Product.fromCat(data)).toList();
@@ -241,7 +207,7 @@ class Product {
 }
 
 class Product_Varient {
-  String id,
+  String? id,
       productId,
       attribute_value_ids,
       price,
@@ -250,8 +216,9 @@ class Product_Varient {
       attr_name,
       varient_value,
       availability,
-      cartCount,stock;
-  List<String> images;
+      cartCount,
+      stock;
+  List<String>? images;
 
   Product_Varient(
       {this.id,
@@ -284,26 +251,18 @@ class Product_Varient {
   }
 }
 
-
 class Attribute {
-  String id, value, name,sType,sValue;
+  String? id, value, name, sType, sValue;
 
-  Attribute({this.id, this.value, this.name,this.sType,this.sValue});
+  Attribute({this.id, this.value, this.name, this.sType, this.sValue});
 
   factory Attribute.fromJson(Map<String, dynamic> json) {
-    return new Attribute(
-      id: json[IDS],
-      name: json[NAME],
-      value: json[VALUE],
-      sType: json[STYPE],
-      sValue: json[SVALUE]
-    );
+    return new Attribute(id: json[IDS], name: json[NAME], value: json[VALUE], sType: json[STYPE], sValue: json[SVALUE]);
   }
 }
 
-
 class Filter {
-  String attributeValues, attributeValId, name;
+  String? attributeValues, attributeValId, name;
 
   Filter({this.attributeValues, this.attributeValId, this.name});
 

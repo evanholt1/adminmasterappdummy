@@ -8,18 +8,18 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 
 import 'Helper/AppBtn.dart';
-import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'Login.dart';
+import 'config/themes/base_theme_colors.dart';
 
 class SetPass extends StatefulWidget {
   final String mobileNumber;
 
   SetPass({
-    Key key,
-    @required this.mobileNumber,
+    Key? key,
+    required this.mobileNumber,
   })  : assert(mobileNumber != null),
         super(key: key);
 
@@ -32,11 +32,11 @@ class _LoginPageState extends State<SetPass> with TickerProviderStateMixin {
   final confirmpassController = TextEditingController();
   final passwordController = TextEditingController();
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
-  String password, comfirmpass;
+  String? password, comfirmpass;
   bool _isNetworkAvail = true;
-  Animation buttonSqueezeanimation;
+  Animation? buttonSqueezeanimation;
 
-  AnimationController buttonController;
+  AnimationController? buttonController;
 
   void validateAndSubmit() async {
     if (validateAndSave()) {
@@ -54,13 +54,13 @@ class _LoginPageState extends State<SetPass> with TickerProviderStateMixin {
         setState(() {
           _isNetworkAvail = false;
         });
-        await buttonController.reverse();
+        await buttonController!.reverse();
       });
     }
   }
 
   bool validateAndSave() {
-    final form = _formkey.currentState;
+    final form = _formkey.currentState!;
     form.save();
     if (form.validate()) {
       return true;
@@ -99,11 +99,9 @@ class _LoginPageState extends State<SetPass> with TickerProviderStateMixin {
                 _isNetworkAvail = await isNetworkAvailable();
                 if (_isNetworkAvail) {
                   Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (BuildContext context) => super.widget));
+                      context, MaterialPageRoute(builder: (BuildContext context) => super.widget));
                 } else {
-                  await buttonController.reverse();
+                  await buttonController!.reverse();
                   setState(() {});
                 }
               });
@@ -120,14 +118,12 @@ class _LoginPageState extends State<SetPass> with TickerProviderStateMixin {
         MOBILENO: widget.mobileNumber,
         NEWPASS: password,
       };
-      Response response =
-          await post(getResetPassApi, body: data, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      Response response = await post(getResetPassApi, body: data, headers: headers).timeout(Duration(seconds: timeOut));
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
         String msg = getdata["message"];
-        await buttonController.reverse();
+        await buttonController!.reverse();
         if (!error) {
           setSnackbar(PASS_SUCCESS_MSG);
           Future.delayed(Duration(seconds: 1)).then((_) {
@@ -142,7 +138,7 @@ class _LoginPageState extends State<SetPass> with TickerProviderStateMixin {
       setState(() {});
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
-      await buttonController.reverse();
+      await buttonController!.reverse();
     }
   }
 
@@ -162,17 +158,14 @@ class _LoginPageState extends State<SetPass> with TickerProviderStateMixin {
         child: Center(
           child: new Text(
             FORGOT_PASSWORDTITILE,
-            style: Theme.of(context)
-                .textTheme
-                .subtitle1
-                .copyWith(color: fontColor, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.subtitle1!.copyWith(color: fontColor, fontWeight: FontWeight.bold),
           ),
         ));
   }
 
   @override
   void dispose() {
-    buttonController.dispose();
+    buttonController!.dispose();
     super.dispose();
   }
 
@@ -182,13 +175,10 @@ class _LoginPageState extends State<SetPass> with TickerProviderStateMixin {
         child: TextFormField(
           keyboardType: TextInputType.text,
           obscureText: true,
-          style: Theme.of(this.context)
-              .textTheme
-              .subtitle2
-              .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+          style: Theme.of(this.context).textTheme.subtitle2!.copyWith(color: fontColor, fontWeight: FontWeight.normal),
           controller: passwordController,
           validator: validatePass,
-          onSaved: (String value) {
+          onSaved: (String? value) {
             password = value;
           },
           decoration: InputDecoration(
@@ -197,8 +187,7 @@ class _LoginPageState extends State<SetPass> with TickerProviderStateMixin {
               color: fontColor,
             ),
             hintText: PASSHINT_LBL,
-            hintStyle:
-                TextStyle(color: fontColor, fontWeight: FontWeight.normal),
+            hintStyle: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
             filled: true,
             fillColor: lightWhite,
             contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -221,20 +210,17 @@ class _LoginPageState extends State<SetPass> with TickerProviderStateMixin {
         child: TextFormField(
           keyboardType: TextInputType.text,
           obscureText: true,
-          style: Theme.of(this.context)
-              .textTheme
-              .subtitle2
-              .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+          style: Theme.of(this.context).textTheme.subtitle2!.copyWith(color: fontColor, fontWeight: FontWeight.normal),
           controller: confirmpassController,
           validator: (value) {
-            if (value.length == 0) return CON_PASS_REQUIRED_MSG;
+            if (value!.length == 0) return CON_PASS_REQUIRED_MSG;
             if (value != password) {
               return CON_PASS_NOT_MATCH_MSG;
             } else {
               return null;
             }
           },
-          onSaved: (String value) {
+          onSaved: (String? value) {
             comfirmpass = value;
           },
           decoration: InputDecoration(
@@ -243,8 +229,7 @@ class _LoginPageState extends State<SetPass> with TickerProviderStateMixin {
               color: fontColor,
             ),
             hintText: CONFIRMPASSHINT_LBL,
-            hintStyle:
-                TextStyle(color: fontColor, fontWeight: FontWeight.normal),
+            hintStyle: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
             filled: true,
             fillColor: lightWhite,
             contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -282,14 +267,13 @@ class _LoginPageState extends State<SetPass> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    buttonController = new AnimationController(
-        duration: new Duration(milliseconds: 2000), vsync: this);
+    buttonController = new AnimationController(duration: new Duration(milliseconds: 2000), vsync: this);
 
     buttonSqueezeanimation = new Tween(
       begin: deviceWidth * 0.7,
       end: 50.0,
     ).animate(new CurvedAnimation(
-      parent: buttonController,
+      parent: buttonController!,
       curve: new Interval(
         0.0,
         0.150,
@@ -299,7 +283,7 @@ class _LoginPageState extends State<SetPass> with TickerProviderStateMixin {
 
   Future<Null> _playAnimation() async {
     try {
-      await buttonController.forward();
+      await buttonController!.forward();
     } on TickerCanceled {}
   }
 
@@ -323,8 +307,7 @@ class _LoginPageState extends State<SetPass> with TickerProviderStateMixin {
         key: _formkey,
         child: Card(
           elevation: 0.5,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
           child: Column(
             children: [

@@ -1,25 +1,25 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:country_code_picker/country_code_picker.dart';
 
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 
 import 'Helper/AppBtn.dart';
-import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'Privacy_Policy.dart';
 import 'Verify_Otp.dart';
+import 'config/themes/base_theme_colors.dart';
 
 class SendOtp extends StatefulWidget {
-  String title;
+  String? title;
 
-  SendOtp({Key key, this.title}) : super(key: key);
+  SendOtp({Key? key, this.title}) : super(key: key);
 
   @override
   _SendOtpState createState() => new _SendOtpState();
@@ -31,10 +31,10 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
   final mobileController = TextEditingController();
   final ccodeController = TextEditingController();
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
-  String mobile, id, countrycode, countryName, mobileno;
+  String? mobile, id, countrycode, countryName, mobileno;
   bool _isNetworkAvail = true;
-  Animation buttonSqueezeanimation;
-  AnimationController buttonController;
+  Animation? buttonSqueezeanimation;
+  AnimationController? buttonController;
 
   void validateAndSubmit() async {
     if (validateAndSave()) {
@@ -45,7 +45,7 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
 
   Future<Null> _playAnimation() async {
     try {
-      await buttonController.forward();
+      await buttonController!.forward();
     } on TickerCanceled {}
   }
 
@@ -58,13 +58,13 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
         setState(() {
           _isNetworkAvail = false;
         });
-        await buttonController.reverse();
+        await buttonController!.reverse();
       });
     }
   }
 
   bool validateAndSave() {
-    final form = _formkey.currentState;
+    final form = _formkey.currentState!;
     form.save();
     if (form.validate()) {
       return true;
@@ -75,7 +75,7 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    buttonController.dispose();
+    buttonController!.dispose();
     super.dispose();
   }
 
@@ -110,11 +110,9 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
                 _isNetworkAvail = await isNetworkAvailable();
                 if (_isNetworkAvail) {
                   Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (BuildContext context) => super.widget));
+                      context, MaterialPageRoute(builder: (BuildContext context) => super.widget));
                 } else {
-                  await buttonController.reverse();
+                  await buttonController!.reverse();
                   setState(() {});
                 }
               });
@@ -129,28 +127,27 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
     try {
       var data = {MOBILE: mobile};
       Response response =
-          await post(getVerifyUserApi, body: data, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+          await post(getVerifyUserApi, body: data, headers: headers).timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
       bool error = getdata["error"];
       String msg = getdata["message"];
-      await buttonController.reverse();
+      await buttonController!.reverse();
 
       if (widget.title == SEND_OTP_TITLE) {
         if (!error) {
           setSnackbar(msg);
 
-          setPrefrence(MOBILE, mobile);
-          setPrefrence(COUNTRY_CODE, countrycode);
+          setPrefrence(MOBILE, mobile!);
+          setPrefrence(COUNTRY_CODE, countrycode!);
           Future.delayed(Duration(seconds: 1)).then((_) {
             Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                     builder: (context) => VerifyOtp(
-                          mobileNumber: mobile,
-                          countryCode: countrycode,
+                          mobileNumber: mobile!,
+                          countryCode: countrycode!,
                           title: SEND_OTP_TITLE,
                         )));
           });
@@ -160,15 +157,15 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
       }
       if (widget.title == FORGOT_PASS_TITLE) {
         if (!error) {
-          setPrefrence(MOBILE, mobile);
-          setPrefrence(COUNTRY_CODE, countrycode);
+          setPrefrence(MOBILE, mobile!);
+          setPrefrence(COUNTRY_CODE, countrycode!);
 
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                   builder: (context) => VerifyOtp(
-                        mobileNumber: mobile,
-                        countryCode: countrycode,
+                        mobileNumber: mobile!,
+                        countryCode: countrycode!,
                         title: FORGOT_PASS_TITLE,
                       )));
         } else {
@@ -177,7 +174,7 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
       }
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
-      await buttonController.reverse();
+      await buttonController!.reverse();
     }
   }
 
@@ -200,27 +197,21 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
         child: Align(
           alignment: Alignment.center,
           child: new Text(
-            widget.title == SEND_OTP_TITLE
-                ? CREATE_ACC_LBL
-                : FORGOT_PASSWORDTITILE,
-            style: Theme.of(context)
-                .textTheme
-                .subtitle1
-                .copyWith(color: fontColor, fontWeight: FontWeight.bold),
+            widget.title == SEND_OTP_TITLE ? CREATE_ACC_LBL : FORGOT_PASSWORDTITILE,
+            style: Theme.of(context).textTheme.subtitle1!.copyWith(color: fontColor, fontWeight: FontWeight.bold),
           ),
         ));
   }
 
   verifyCodeTxt() {
     return Padding(
-        padding:
-            EdgeInsets.only(top: 40.0, left: 40.0, right: 40.0, bottom: 20.0),
+        padding: EdgeInsets.only(top: 40.0, left: 40.0, right: 40.0, bottom: 20.0),
         child: Align(
           alignment: Alignment.center,
           child: new Text(
             SEND_VERIFY_CODE_LBL,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.subtitle2.copyWith(
+            style: Theme.of(context).textTheme.subtitle2!.copyWith(
                   color: fontColor,
                   fontWeight: FontWeight.normal,
                 ),
@@ -256,7 +247,7 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
     double height = deviceHeight * 0.9;
     return CountryCodePicker(
         showCountryOnly: false,
-             flagWidth: 20,
+        flagWidth: 20,
         searchDecoration: InputDecoration(
           hintText: COUNTRY_CODE_LBL,
           fillColor: fontColor,
@@ -279,21 +270,16 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
     return TextFormField(
         keyboardType: TextInputType.number,
         controller: mobileController,
-        style: Theme.of(this.context)
-            .textTheme
-            .subtitle2
-            .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+        style: Theme.of(this.context).textTheme.subtitle2!.copyWith(color: fontColor, fontWeight: FontWeight.normal),
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         validator: validateMob,
-        onSaved: (String value) {
+        onSaved: (String? value) {
           mobile = value;
         },
         decoration: InputDecoration(
           hintText: MOBILEHINT_LBL,
-          hintStyle: Theme.of(this.context)
-              .textTheme
-              .subtitle2
-              .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+          hintStyle:
+              Theme.of(this.context).textTheme.subtitle2!.copyWith(color: fontColor, fontWeight: FontWeight.normal),
           contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: lightWhite),
@@ -317,14 +303,13 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
   termAndPolicyTxt() {
     return widget.title == SEND_OTP_TITLE
         ? Padding(
-            padding: EdgeInsets.only(
-                bottom: 30.0, left: 25.0, right: 25.0, top: 10.0),
+            padding: EdgeInsets.only(bottom: 30.0, left: 25.0, right: 25.0, top: 10.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(CONTINUE_AGREE_LBL,
-                    style: Theme.of(context).textTheme.caption.copyWith(
-                        color: fontColor, fontWeight: FontWeight.normal)),
+                    style:
+                        Theme.of(context).textTheme.caption!.copyWith(color: fontColor, fontWeight: FontWeight.normal)),
                 SizedBox(
                   height: 3.0,
                 ),
@@ -340,17 +325,17 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
                       },
                       child: Text(
                         TERMS_SERVICE_LBL,
-                        style: Theme.of(context).textTheme.caption.copyWith(
-                            color: fontColor,
-                            decoration: TextDecoration.underline,
-                            fontWeight: FontWeight.normal),
+                        style: Theme.of(context).textTheme.caption!.copyWith(
+                            color: fontColor, decoration: TextDecoration.underline, fontWeight: FontWeight.normal),
                       )),
                   SizedBox(
                     width: 5.0,
                   ),
                   Text(AND_LBL,
-                      style: Theme.of(context).textTheme.caption.copyWith(
-                          color: fontColor, fontWeight: FontWeight.normal)),
+                      style: Theme.of(context)
+                          .textTheme
+                          .caption!
+                          .copyWith(color: fontColor, fontWeight: FontWeight.normal)),
                   SizedBox(
                     width: 5.0,
                   ),
@@ -365,10 +350,8 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
                       },
                       child: Text(
                         PRIVACY_POLICY_LBL,
-                        style: Theme.of(context).textTheme.caption.copyWith(
-                            color: fontColor,
-                            decoration: TextDecoration.underline,
-                            fontWeight: FontWeight.normal),
+                        style: Theme.of(context).textTheme.caption!.copyWith(
+                            color: fontColor, decoration: TextDecoration.underline, fontWeight: FontWeight.normal),
                       )),
                 ]),
               ],
@@ -398,14 +381,13 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    buttonController = new AnimationController(
-        duration: new Duration(milliseconds: 2000), vsync: this);
+    buttonController = new AnimationController(duration: new Duration(milliseconds: 2000), vsync: this);
 
     buttonSqueezeanimation = new Tween(
       begin: deviceWidth * 0.7,
       end: 50.0,
     ).animate(new CurvedAnimation(
-      parent: buttonController,
+      parent: buttonController!,
       curve: new Interval(
         0.0,
         0.150,
@@ -424,8 +406,7 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
             key: _formkey,
             child: Card(
               elevation: 0.5,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               margin: EdgeInsets.only(
                 left: 20.0,
                 right: 20.0,

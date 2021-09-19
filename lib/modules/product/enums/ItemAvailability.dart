@@ -1,0 +1,4 @@
+enum ItemAvailability {
+  Unavailable,
+  Available,
+}

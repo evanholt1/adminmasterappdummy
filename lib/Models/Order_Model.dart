@@ -1,8 +1,8 @@
-import 'package:intl/intl.dart';
 import 'package:admin_eshop/Helper/String.dart';
+import 'package:intl/intl.dart';
 
 class Order_Model {
-  String id,
+  String? id,
       name,
       mobile,
       latitude,
@@ -28,60 +28,59 @@ class Order_Model {
       activeStatus,
       otp,
       deliveryBoyId,
-      invoice,
       delDate,
       delTime,
       countryCode;
   List<Attachment> attachList = [];
-
+  String? invoice;
   List<OrderItem> itemList;
   List<String> listStatus = [];
   List<String> listDate = [];
 
   Order_Model(
-      {this.id,
-      this.name,
-      this.mobile,
-      this.delCharge,
-      this.walBal,
-      this.promo,
-      this.promoDis,
-      this.payMethod,
-      this.total,
-      this.subTotal,
-      this.payable,
-      this.address,
-      this.taxPer,
-      this.taxAmt,
-      this.orderDate,
-      this.dateTime,
-      this.itemList,
-      this.listStatus,
-      this.listDate,
-      this.isReturnable,
-      this.isCancleable,
-      this.isAlrCancelled,
-      this.isAlrReturned,
-      this.rtnReqSubmitted,
-      this.activeStatus,
-      this.otp,
+      {required this.id,
+      required this.name,
+      required this.mobile,
+      required this.delCharge,
+      required this.walBal,
+      required this.promo,
+      required this.promoDis,
+      required this.payMethod,
+      required this.total,
+      required this.subTotal,
+      required this.payable,
+      required this.address,
+      required this.taxPer,
+      required this.taxAmt,
+      required this.orderDate,
+      required this.dateTime,
+      required this.itemList,
+      required this.listStatus,
+      required this.listDate,
+      required this.isReturnable,
+      required this.isCancleable,
+      required this.isAlrCancelled,
+      required this.isAlrReturned,
+      required this.rtnReqSubmitted,
+      required this.activeStatus,
+      required this.otp,
       this.invoice,
-      this.latitude,
-      this.longitude,
-      this.delDate,
-      this.delTime,
-      this.countryCode,
-      this.deliveryBoyId,
-      this.attachList});
+      required this.latitude,
+      required this.longitude,
+      required this.delDate,
+      required this.delTime,
+      required this.countryCode,
+      required this.deliveryBoyId,
+      required this.attachList});
 
   factory Order_Model.fromJson(Map<String, dynamic> parsedJson) {
     List<OrderItem> itemList = [];
     List<Attachment> attachmentList = [];
     var order = (parsedJson[ORDER_ITEMS] as List);
-    if (order == null || order.isEmpty)
-      return null;
-    else
-      itemList = order.map((data) => new OrderItem.fromJson(data)).toList();
+    // if (order == null || order.isEmpty)
+    //   return null;
+    // else
+    itemList = order.map((data) => new OrderItem.fromJson(data)).toList();
     String date = parsedJson[DATE_ADDED];
     date = DateFormat('dd-MM-yyyy').format(DateTime.parse(date));
     List<String> lStatus = [];
@@ -92,8 +91,7 @@ class Order_Model {
     if (attachments == null || attachments.isEmpty)
       attachmentList = [];
     else
-      attachmentList =
-          attachments.map((data) => new Attachment.fromJson(data)).toList();
+      attachmentList = attachments.map((data) => new Attachment.fromJson(data)).toList();
 
     var allSttus = parsedJson[STATUS];
     for (var curStatus in allSttus) {
@@ -130,10 +128,8 @@ class Order_Model {
         latitude: parsedJson[LATITUDE],
         countryCode: parsedJson[COUNTRY_CODE],
         longitude: parsedJson[LONGITUDE],
-        delDate: parsedJson[DEL_DATE] != null
-            ? DateFormat('dd-MM-yyyy')
-                .format(DateTime.parse(parsedJson[DEL_DATE]))
-            : '',
+        delDate:
+            parsedJson[DEL_DATE] != null ? DateFormat('dd-MM-yyyy').format(DateTime.parse(parsedJson[DEL_DATE])) : '',
         delTime: parsedJson[DEL_TIME] != null ? parsedJson[DEL_TIME] : '',
         attachList: attachmentList,
         deliveryBoyId: parsedJson[DELIVERY_BOY_ID]);
@@ -141,7 +137,7 @@ class Order_Model {
 }
 
 class OrderItem {
-  String id,
+  String? id,
       name,
       qty,
       price,
@@ -163,25 +159,25 @@ class OrderItem {
   List<String> listDate = [];
 
   OrderItem(
-      {this.qty,
-      this.id,
-      this.name,
-      this.price,
-      this.subTotal,
-      this.status,
-      this.image,
-      this.varientId,
-      this.listDate,
-      this.listStatus,
-      this.isCancle,
-      this.isReturn,
-      this.isAlrReturned,
-      this.isAlrCancelled,
-      this.rtnReqSubmitted,
-      this.attr_name,
-      this.productId,
-      this.varient_values,
-      this.curSelected});
+      {required this.qty,
+      required this.id,
+      required this.name,
+      required this.price,
+      required this.subTotal,
+      required this.status,
+      required this.image,
+      required this.varientId,
+      required this.listDate,
+      required this.listStatus,
+      required this.isCancle,
+      required this.isReturn,
+      required this.isAlrReturned,
+      required this.isAlrCancelled,
+      required this.rtnReqSubmitted,
+      required this.attr_name,
+      required this.productId,
+      required this.varient_values,
+      required this.curSelected});
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     List<String> lStatus = [];
@@ -219,7 +215,7 @@ class OrderItem {
 class Attachment {
   String id, attachment;
 
-  Attachment({this.id, this.attachment});
+  Attachment({required this.id, required this.attachment});
 
   factory Attachment.fromJson(Map<String, dynamic> json) {
     return Attachment(id: json[ID], attachment: json[ATTACHMENT]);

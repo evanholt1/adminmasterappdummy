@@ -1,15 +1,13 @@
-
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:jaguar_jwt/jaguar_jwt.dart';
-import 'package:connectivity/connectivity.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 
-import 'Color.dart';
+import '../config/themes/base_theme_colors.dart';
 import 'Constant.dart';
-
 import 'String.dart';
 
 setPrefrence(String key, String value) async {
@@ -17,7 +15,7 @@ setPrefrence(String key, String value) async {
   await prefs.setString(key, value);
 }
 
-Future<String> getPrefrence(String key) async {
+Future<String?> getPrefrence(String key) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   return prefs.getString(key);
 }
@@ -34,29 +32,20 @@ Future<bool> getPrefrenceBool(String key) async {
 
 Future<bool> isNetworkAvailable() async {
   var connectivityResult = await (Connectivity().checkConnectivity());
-  if (connectivityResult == ConnectivityResult.mobile) {
-    return true;
-  } else if (connectivityResult == ConnectivityResult.wifi) {
-    return true;
-  }
+  if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) return true;
   return false;
 }
 
 back() {
   return BoxDecoration(
     gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [grad1Color, grad2Color],
-        stops: [0, 1]),
+        begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [grad1Color, grad2Color], stops: [0, 1]),
   );
 }
 
 shadow() {
   return BoxDecoration(
-    boxShadow: [
-      BoxShadow(color: Color(0x1a0400ff), offset: Offset(0, 0), blurRadius: 30)
-    ],
+    boxShadow: [BoxShadow(color: Color(0x1a0400ff), offset: Offset(0, 0), blurRadius: 30)],
   );
 }
 
@@ -115,10 +104,7 @@ noIntImage() {
 noIntText(BuildContext context) {
   return Container(
       child: Text(NO_INTERNET,
-          style: Theme.of(context)
-              .textTheme
-              .headline5
-              .copyWith(color: primary, fontWeight: FontWeight.normal)));
+          style: Theme.of(context).textTheme.headline5!.copyWith(color: primary, fontWeight: FontWeight.normal)));
 }
 
 noIntDec(BuildContext context) {
@@ -126,7 +112,7 @@ noIntDec(BuildContext context) {
     padding: EdgeInsets.only(top: 30.0, left: 30.0, right: 30.0),
     child: Text(NO_INTERNET_DISC,
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.headline6.copyWith(
+        style: Theme.of(context).textTheme.headline6!.copyWith(
               color: lightBlack2,
               fontWeight: FontWeight.normal,
             )),
@@ -173,8 +159,7 @@ Future<void> clearUserSession() async {
   await prefs.clear();
 }
 
-Future<void> saveUserDetail(
-    String userId, String name, String email, String mobile) async {
+Future<void> saveUserDetail(String userId, String name, String email, String mobile) async {
   final waitList = <Future<void>>[];
   SharedPreferences prefs = await SharedPreferences.getInstance();
   waitList.add(prefs.setString(ID, userId));
@@ -184,14 +169,14 @@ Future<void> saveUserDetail(
   await Future.wait(waitList);
 }
 
-String validateField(String value) {
-  if (value.length == 0)
+String? validateField(String? value) {
+  if (value != null && value.length == 0)
     return FIELD_REQUIRED;
   else
     return null;
 }
 
-String validateUserName(String value) {
+String? validateUserName(String value) {
   if (value.isEmpty) {
     return USER_REQUIRED;
   }
@@ -201,7 +186,6 @@ String validateUserName(String value) {
   return null;
 }
 
-
 erroWidget(double size) {
   return Image.asset(
     'assets/images/placeholder.png',
@@ -210,7 +194,8 @@ erroWidget(double size) {
   );
 }
 
-String validateMob(String value) {
+String? validateMob(String? value) {
+  if (value == null) return value;
   if (value.isEmpty) {
     return MOB_REQUIRED;
   }
@@ -220,7 +205,8 @@ String validateMob(String value) {
   return null;
 }
 
-String validatePass(String value) {
+String? validatePass(String? value) {
+  if (value == null) return value;
   if (value.length == 0)
     return PWD_REQUIRED;
   else if (value.length <= 5)
@@ -229,7 +215,7 @@ String validatePass(String value) {
     return null;
 }
 
-String validateAltMob(String value) {
+String? validateAltMob(String value) {
   if (value.isNotEmpty) if (value.length < 9) {
     return VALID_MOB;
   }
@@ -246,12 +232,10 @@ Widget getNoItem() {
 
 String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
 
-
-String validateEmail(String value, String msg1, String msg2) {
+String? validateEmail(String value, String msg1, String msg2) {
   if (value.length == 0) {
     return msg1;
-  } else if (!RegExp(
-          r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)"
+  } else if (!RegExp(r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)"
           r"*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+"
           r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
       .hasMatch(value)) {
@@ -266,8 +250,8 @@ Widget shimmer() {
     width: double.infinity,
     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
     child: Shimmer.fromColors(
-      baseColor: Colors.grey[300],
-      highlightColor: Colors.grey[100],
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
       child: SingleChildScrollView(
         child: Column(
           children: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -294,8 +278,7 @@ Widget shimmer() {
                                 color: white,
                               ),
                               Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 5.0),
+                                padding: const EdgeInsets.symmetric(vertical: 5.0),
                               ),
                               Container(
                                 width: double.infinity,
@@ -303,8 +286,7 @@ Widget shimmer() {
                                 color: white,
                               ),
                               Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 5.0),
+                                padding: const EdgeInsets.symmetric(vertical: 5.0),
                               ),
                               Container(
                                 width: 100.0,
@@ -312,8 +294,7 @@ Widget shimmer() {
                                 color: white,
                               ),
                               Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 5.0),
+                                padding: const EdgeInsets.symmetric(vertical: 5.0),
                               ),
                               Container(
                                 width: 20.0,
@@ -334,8 +315,7 @@ Widget shimmer() {
 }
 
 String getToken() {
-  final claimSet =
-      new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
+  final claimSet = new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
 
   String token = issueJwtHS256(claimSet, jwtKey);
 

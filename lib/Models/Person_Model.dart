@@ -4,16 +4,16 @@ class PersonModel {
   String id, name, email, img, status, balance, mobile, city, area, street;
 
   PersonModel(
-      {this.id,
-      this.name,
-      this.email,
-      this.img,
-      this.status,
-      this.balance,
-      this.mobile,
-      this.city,
-      this.area,
-      this.street});
+      {required this.id,
+      required this.name,
+      required this.email,
+      required this.img,
+      required this.status,
+      required this.balance,
+      required this.mobile,
+      required this.city,
+      required this.area,
+      required this.street});
 
   factory PersonModel.fromJson(Map<String, dynamic> json) {
     return new PersonModel(
@@ -29,12 +29,11 @@ class PersonModel {
         balance: json[BALANCE]);
   }
 
-   @override
+  @override
   String toString() {
     return this.name;
   }
 
-  
   ///this method will prevent the override of toString
   String userAsString() {
     return '#${this.id} ${this.name}';

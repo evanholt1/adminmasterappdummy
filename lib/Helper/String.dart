@@ -28,9 +28,6 @@ final Uri sendMsgApi = Uri.parse(baseUrl + 'send_message');
 final Uri getTicketApi = Uri.parse(baseUrl + 'get_tickets');
 final Uri deleteBankProofApi = Uri.parse(baseUrl + 'delete_order_receipt');
 
-
-
-
 const String USERNAME = 'username';
 const String ADDRESS = 'address';
 const String EMAIL = 'email';
@@ -191,10 +188,10 @@ const String IS_SIMILAR = 'is_similar_products';
 const String ALL = 'all';
 const String awaitingPayment = 'Awaiting Payment';
 const String PLACED = 'received';
-const String SHIPED = 'shipped';
+const String SHIPPED = 'shipped';
 const String PROCESSED = 'processed';
-const String DELIVERD = 'delivered';
-const String CANCLED = 'cancelled';
+const String DELIVERED = 'delivered';
+const String CANCELLED = 'cancelled';
 const String RETURNED = 'returned';
 const String ITEM_RETURN = 'Item Return';
 const String ITEM_CANCEL = 'Item Cancel';
@@ -242,9 +239,7 @@ const String ATTACH = 'attachments[]';
 const String EMAIL_REQUIRED = "Email is Required";
 const String VALID_EMAIL = "Please enter a valid email Address";
 const String ATTACHMENT = 'attachment';
-const String TICKET='support_tickets';
-
-
+const String TICKET = 'support_tickets';
 
 final String ISFROMBACK = "isfrombackground$appName";
 final String isLogin = '$appName+_islogin';
@@ -253,10 +248,11 @@ String CUR_USERNAME = "";
 String CUR_TICK_ID = '';
 //String CUR_ = '';
 //String CUR_PRODUCT='';
-String CUR_CURRENCY = '';
+//String CUR_CURRENCY = '';
+String CUR_CURRENCY = "JOD";
 
-double deviceHeight;
-double deviceWidth;
+late double deviceHeight;
+late double deviceWidth;
 
 bool readOrder = false;
 bool editOrder = false;
@@ -266,8 +262,7 @@ bool readProduct = false;
 bool editProduct = false;
 bool deletProduct = false;
 
-
-bool ticketRead=false, ticketWrite=false;
+bool ticketRead = false, ticketWrite = false;
 bool readCust = false;
 
 bool readDel = false;

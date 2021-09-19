@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:admin_eshop/OrderList.dart';
+import 'package:admin_eshop/modules/orders/screens/order_list/OrderList.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -15,8 +15,7 @@ import 'Constant.dart';
 import 'Session.dart';
 import 'String.dart';
 
-FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 FirebaseMessaging messaging = FirebaseMessaging.instance;
 
 class PushNotificationService {
@@ -24,33 +23,27 @@ class PushNotificationService {
 
   // final Function updateHome;
 
-  PushNotificationService({this.context});
+  PushNotificationService({required this.context});
 
   Future initialise() async {
     iOSPermission();
     messaging.getToken().then((token) async {
-      CUR_USERID = await getPrefrence(ID);
-      if (CUR_USERID != null && CUR_USERID != "") _registerToken(token);
+      CUR_USERID = (await getPrefrence(ID)) ?? "";
+      if (CUR_USERID != null && CUR_USERID != "") _registerToken(token!);
     });
 
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('notifcation_icon');
-    final IOSInitializationSettings initializationSettingsIOS =
-        IOSInitializationSettings();
-    final MacOSInitializationSettings initializationSettingsMacOS =
-        MacOSInitializationSettings();
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-            android: initializationSettingsAndroid,
-            iOS: initializationSettingsIOS,
-            macOS: initializationSettingsMacOS);
+    final IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings();
+    final MacOSInitializationSettings initializationSettingsMacOS = MacOSInitializationSettings();
+    final InitializationSettings initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOS, macOS: initializationSettingsMacOS);
 
-    flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: onSelectNotification);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings, onSelectNotification: onSelectNotification);
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       var data = message.notification;
-      var title = data.title.toString();
+      var title = data!.title.toString();
       var body = data.body.toString();
       var image = message.data['image'] ?? '';
 
@@ -76,8 +69,7 @@ class PushNotificationService {
             var chat = {};
 
             chat["data"] = sendata;
-            if (parsedJson[USER_ID] != CUR_USERID)
-              chatstreamdata.sink.add(jsonEncode(chat));
+            if (parsedJson[USER_ID] != CUR_USERID) chatstreamdata.sink.add(jsonEncode(chat));
           }
         } else {
           if (image != null && image != 'null' && image != '') {
@@ -93,7 +85,7 @@ class PushNotificationService {
       }
     });
 
-    messaging.getInitialMessage().then((RemoteMessage message) async {
+    messaging.getInitialMessage().then((RemoteMessage? message) async {
       bool back = await getPrefrenceBool(ISFROMBACK);
 
       if (message != null && back) {
@@ -101,9 +93,7 @@ class PushNotificationService {
         var id = '';
         id = message.data['type_id'] ?? '';
 
-
-          getStatics(type,id);
-
+        getStatics(type, id);
 
         setPrefrenceBool(ISFROMBACK, false);
       }
@@ -139,14 +129,13 @@ class PushNotificationService {
     });
   }
 
-  Future<Null> getStatics(String type,String id) async {
-    CUR_USERID = await getPrefrence(ID);
+  Future<Null> getStatics(String type, String id) async {
+    CUR_USERID = (await getPrefrence(ID))!;
 
     var parameter = {USER_ID: CUR_USERID};
 
     Response response =
-        await post(getStaticsApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+        await post(getStaticsApi, body: parameter, headers: headers).timeout(Duration(seconds: timeOut));
 
     if (response.statusCode == 200) {
       var getdata = json.decode(response.body);
@@ -155,54 +144,36 @@ class PushNotificationService {
       if (!error) {
         CUR_CURRENCY = getdata["currency_symbol"];
 
-        readOrder =
-            getdata["permissions"]["orders"]["read"] == "on" ? true : false;
-        editOrder =
-            getdata["permissions"]["orders"]["update"] == "on" ? true : false;
-        deleteOrder =
-            getdata["permissions"]["orders"]["delete"] == "on" ? true : false;
+        readOrder = getdata["permissions"]["orders"]["read"] == "on" ? true : false;
+        editOrder = getdata["permissions"]["orders"]["update"] == "on" ? true : false;
+        deleteOrder = getdata["permissions"]["orders"]["delete"] == "on" ? true : false;
 
-        readProduct =
-            getdata["permissions"]["product"]["read"] == "on" ? true : false;
-        editProduct =
-            getdata["permissions"]["product"]["update"] == "on" ? true : false;
-        deletProduct =
-            getdata["permissions"]["product"]["delete"] == "on" ? true : false;
+        readProduct = getdata["permissions"]["product"]["read"] == "on" ? true : false;
+        editProduct = getdata["permissions"]["product"]["update"] == "on" ? true : false;
+        deletProduct = getdata["permissions"]["product"]["delete"] == "on" ? true : false;
 
-        ticketRead = getdata["permissions"]["support_tickets"]["read"] == "on"
-            ? true
-            : false;
+        ticketRead = getdata["permissions"]["support_tickets"]["read"] == "on" ? true : false;
 
-        ticketWrite =
-        getdata["permissions"]["support_tickets"]["update"] == "on"
-            ? true
-            : false;
+        ticketWrite = getdata["permissions"]["support_tickets"]["update"] == "on" ? true : false;
 
-
-        readCust =
-            getdata["permissions"]["customers"]["read"] == "on" ? true : false;
-        readDel = getdata["permissions"]["delivery_boy"]["read"] == "on"
-            ? true
-            : false;
-
+        readCust = getdata["permissions"]["customers"]["read"] == "on" ? true : false;
+        readDel = getdata["permissions"]["delivery_boy"]["read"] == "on" ? true : false;
 
         if (type == "ticket_message") {
           Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => Chat(
-                  id: id,
-                  status: "",
-                )),
+                      id: id,
+                      status: "",
+                    )),
           );
-        }else {
+        } else {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => OrderList()),
           );
         }
-
-
       }
     }
   }
@@ -218,14 +189,12 @@ class PushNotificationService {
   void _registerToken(String token) async {
     var parameter = {USER_ID: CUR_USERID, FCM_ID: token};
 
-    Response response =
-        await post(updateFcmApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+    Response response = await post(updateFcmApi, body: parameter, headers: headers).timeout(Duration(seconds: timeOut));
 
     var getdata = json.decode(response.body);
   }
 
-  Future onSelectNotification(String payload) {
+  Future<void> onSelectNotification(String? payload) async {
     if (payload != null) {
       List<String> pay = payload.split(",");
 
@@ -263,38 +232,28 @@ Future<String> _downloadAndSaveImage(String url, String fileName) async {
   return filePath;
 }
 
-Future<void> generateImageNotication(
-    String title, String msg, String image, String type, String id) async {
+Future<void> generateImageNotication(String title, String msg, String image, String type, String id) async {
   var largeIconPath = await _downloadAndSaveImage(image, 'largeIcon');
   var bigPicturePath = await _downloadAndSaveImage(image, 'bigPicture');
-  var bigPictureStyleInformation = BigPictureStyleInformation(
-      FilePathAndroidBitmap(bigPicturePath),
+  var bigPictureStyleInformation = BigPictureStyleInformation(FilePathAndroidBitmap(bigPicturePath),
       hideExpandedLargeIcon: true,
       contentTitle: title,
       htmlFormatContentTitle: true,
       summaryText: msg,
       htmlFormatSummaryText: true);
   var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'big text channel id',
-      'big text channel name',
-      'big text channel description',
-      largeIcon: FilePathAndroidBitmap(largeIconPath),
-      styleInformation: bigPictureStyleInformation);
-  var platformChannelSpecifics =
-      NotificationDetails(android: androidPlatformChannelSpecifics);
-  await flutterLocalNotificationsPlugin
-      .show(0, title, msg, platformChannelSpecifics, payload: type + "," + id);
+      'big text channel id', 'big text channel name', 'big text channel description',
+      largeIcon: FilePathAndroidBitmap(largeIconPath), styleInformation: bigPictureStyleInformation);
+  var platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
+  await flutterLocalNotificationsPlugin.show(0, title, msg, platformChannelSpecifics, payload: type + "," + id);
 }
 
-Future<void> generateSimpleNotication(
-    String title, String msg, String type, String id) async {
+Future<void> generateSimpleNotication(String title, String msg, String type, String id) async {
   var androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'your channel id', 'your channel name', 'your channel description',
       importance: Importance.max, priority: Priority.high, ticker: 'ticker');
   var iosDetail = IOSNotificationDetails();
 
-  var platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics, iOS: iosDetail);
-  await flutterLocalNotificationsPlugin
-      .show(0, title, msg, platformChannelSpecifics, payload: type + "," + id);
+  var platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics, iOS: iosDetail);
+  await flutterLocalNotificationsPlugin.show(0, title, msg, platformChannelSpecifics, payload: type + "," + id);
 }

@@ -1,20 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'Color.dart';
+import '../config/themes/base_theme_colors.dart';
 
 class SimBtn extends StatelessWidget {
   final String title;
   final VoidCallback onBtnSelected;
   double size;
 
-  SimBtn({Key key, this.title, this.onBtnSelected, this.size})
-      : super(key: key);
+  SimBtn({Key? key, required this.title, required this.onBtnSelected, required this.size}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-
-    size=MediaQuery.of(context).size.width *size;
+    size = MediaQuery.of(context).size.width * size;
     return _buildBtnAnimation(context);
   }
 
@@ -26,18 +24,12 @@ class SimBtn extends StatelessWidget {
           alignment: FractionalOffset.center,
           decoration: new BoxDecoration(
             gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [grad1Color, grad2Color],
-                stops: [0, 1]),
+                begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [grad1Color, grad2Color], stops: [0, 1]),
             borderRadius: new BorderRadius.all(const Radius.circular(10.0)),
           ),
           child: Text(title,
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .subtitle1
-                  .copyWith(color: white, fontWeight: FontWeight.normal))),
+              style: Theme.of(context).textTheme.subtitle1!.copyWith(color: white, fontWeight: FontWeight.normal))),
       onPressed: () {
         onBtnSelected();
       },

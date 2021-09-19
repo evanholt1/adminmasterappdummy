@@ -7,15 +7,15 @@ import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:http/http.dart';
 
 import 'Helper/AppBtn.dart';
-import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
+import 'config/themes/base_theme_colors.dart';
 
 class PrivacyPolicy extends StatefulWidget {
   final String title;
 
-  const PrivacyPolicy({Key key, this.title}) : super(key: key);
+  const PrivacyPolicy({Key? key, required this.title}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -26,24 +26,23 @@ class PrivacyPolicy extends StatefulWidget {
 class StatePrivacy extends State<PrivacyPolicy> with TickerProviderStateMixin {
   bool _isLoading = true;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  String privacy;
+  late String? privacy;
   String url = "";
-  Animation buttonSqueezeanimation;
-  AnimationController buttonController;
+  late Animation? buttonSqueezeanimation;
+  late AnimationController? buttonController;
   bool _isNetworkAvail = true;
 
   @override
   void initState() {
     super.initState();
     getSetting();
-    buttonController = new AnimationController(
-        duration: new Duration(milliseconds: 2000), vsync: this);
+    buttonController = new AnimationController(duration: new Duration(milliseconds: 2000), vsync: this);
 
     buttonSqueezeanimation = new Tween(
       begin: deviceWidth * 0.7,
       end: 50.0,
     ).animate(new CurvedAnimation(
-      parent: buttonController,
+      parent: buttonController!,
       curve: new Interval(
         0.0,
         0.150,
@@ -53,13 +52,13 @@ class StatePrivacy extends State<PrivacyPolicy> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    buttonController.dispose();
+    buttonController!.dispose();
     super.dispose();
   }
 
   Future<Null> _playAnimation() async {
     try {
-      await buttonController.forward();
+      await buttonController!.forward();
     } on TickerCanceled {}
   }
 
@@ -81,11 +80,9 @@ class StatePrivacy extends State<PrivacyPolicy> with TickerProviderStateMixin {
                 _isNetworkAvail = await isNetworkAvailable();
                 if (_isNetworkAvail) {
                   Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (BuildContext context) => super.widget));
+                      context, MaterialPageRoute(builder: (BuildContext context) => super.widget));
                 } else {
-                  await buttonController.reverse();
+                  await buttonController!.reverse();
                   setState(() {});
                 }
               });
@@ -110,9 +107,7 @@ class StatePrivacy extends State<PrivacyPolicy> with TickerProviderStateMixin {
                 withJavascript: true,
                 appCacheEnabled: true,
                 scrollBar: false,
-                url: new Uri.dataFromString(privacy,
-                        mimeType: 'text/html', encoding: utf8)
-                    .toString(),
+                url: new Uri.dataFromString(privacy!, mimeType: 'text/html', encoding: utf8).toString(),
               )
             : Scaffold(
                 key: _scaffoldKey,
@@ -131,21 +126,19 @@ class StatePrivacy extends State<PrivacyPolicy> with TickerProviderStateMixin {
         else if (widget.title == TERM) type = TERM_COND;
 
         //var parameter = {TYPE: type};
-        Response response =
-            await post(getSettingApi,  headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        Response response = await post(getSettingApi, headers: headers).timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
-           String type;
-        if (widget.title == PRIVACY)
-          type = PRIVACY_POLLICY;
-        else if (widget.title == TERM) type = TERM_COND;
+          String? type;
+          if (widget.title == PRIVACY)
+            type = PRIVACY_POLLICY;
+          else if (widget.title == TERM) type = TERM_COND;
 
-          privacy = getdata["data"][type][0].toString();
+          privacy = getdata["data"][type!][0].toString();
         } else {
           setSnackbar(msg);
         }

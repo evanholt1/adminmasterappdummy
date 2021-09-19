@@ -5,28 +5,26 @@ import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:http/http.dart' as http;
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:open_file/open_file.dart';
-
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
-import 'Model/Model.dart';
+import 'Models/Model.dart';
+import 'config/themes/base_theme_colors.dart';
 
-StreamController<String> chatstreamdata;
+late StreamController<String> chatstreamdata;
 
 class Chat extends StatefulWidget {
   final String id, status;
-  const Chat({Key key, this.id, this.status}) : super(key: key);
+  const Chat({Key? key, required this.id, required this.status}) : super(key: key);
 
   @override
   _ChatState createState() => _ChatState();
@@ -36,7 +34,7 @@ class _ChatState extends State<Chat> {
   TextEditingController msgController = new TextEditingController();
   List<File> files = [];
   List<Model> chatList = [];
-  Map<String, String> downloadlist;
+  late Map<String, String> downloadlist;
   String _filePath = "";
   ScrollController _scrollController = new ScrollController();
 
@@ -50,10 +48,8 @@ class _ChatState extends State<Chat> {
     getMsg();
   }
 
-  static void downloadCallback(
-      String id, DownloadTaskStatus status, int progress) {
-    final SendPort send =
-        IsolateNameServer.lookupPortByName('downloader_send_port');
+  static void downloadCallback(String id, DownloadTaskStatus status, int progress) {
+    final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port')!;
     send.send([id, status, progress]);
   }
 
@@ -82,10 +78,8 @@ class _ChatState extends State<Chat> {
   }
 
   void insertItem(String response) {
-  
     if (chatstreamdata != null) chatstreamdata.sink.add(response);
-    _scrollController.animateTo(0.0,
-        duration: Duration(milliseconds: 300), curve: Curves.easeOut);
+    _scrollController.animateTo(0.0, duration: Duration(milliseconds: 300), curve: Curves.easeOut);
   }
 
   @override
@@ -152,12 +146,9 @@ class _ChatState extends State<Chat> {
 
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: message.uid == CUR_USERID
-          ? CrossAxisAlignment.end
-          : CrossAxisAlignment.start,
+      crossAxisAlignment: message.uid == CUR_USERID ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: <Widget>[
-        message.uid == CUR_USERID ||
-                (message.msg == null || message.msg.isEmpty)
+        message.uid == CUR_USERID || (message.msg == null || message.msg!.isEmpty)
             ? Container()
             : Padding(
                 padding: EdgeInsets.only(top: 10),
@@ -175,38 +166,31 @@ class _ChatState extends State<Chat> {
                     // )),
                     Padding(
                       padding: EdgeInsets.only(left: 5.0),
-                      child: Text(capitalize(message.name),
-                          style: TextStyle(color: primary, fontSize: 12)),
+                      child: Text(capitalize(message.name!), style: TextStyle(color: primary, fontSize: 12)),
                     )
                   ],
                 ),
               ),
         ListView.builder(
             itemBuilder: (context, index) {
-              return attachItem(message.attach, index, message);
+              return attachItem(message.attach!, index, message);
             },
-            itemCount: message.attach.length,
+            itemCount: message.attach!.length,
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true),
-        message.msg != null && message.msg.isNotEmpty
+        message.msg != null && message.msg!.isNotEmpty
             ? Card(
                 elevation: 0.0,
-                color: message.uid == CUR_USERID
-                    ? fontColor.withOpacity(0.1)
-                    : white,
+                color: message.uid == CUR_USERID ? fontColor.withOpacity(0.1) : white,
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
                   child: Column(
-                    crossAxisAlignment: message.uid == CUR_USERID
-                        ? CrossAxisAlignment.end
-                        : CrossAxisAlignment.start,
+                    crossAxisAlignment: message.uid == CUR_USERID ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                     children: <Widget>[
                       Text("${message.msg}", style: TextStyle(color: black)),
                       Padding(
                         padding: const EdgeInsetsDirectional.only(top: 5),
-                        child: Text((message.date),
-                            style: TextStyle(color: lightBlack, fontSize: 9)),
+                        child: Text((message.date!), style: TextStyle(color: lightBlack, fontSize: 9)),
                       ),
                     ],
                   ),
@@ -224,8 +208,7 @@ class _ChatState extends State<Chat> {
         Directory target = await getApplicationDocumentsDirectory();
         _filePath = target.path.toString();
       } else {
-        Directory downloadsDirectory =
-            await DownloadsPathProvider.downloadsDirectory;
+        Directory downloadsDirectory = (await DownloadsPathProvider.downloadsDirectory)!;
         _filePath = downloadsDirectory.path.toString();
       }
 
@@ -235,8 +218,7 @@ class _ChatState extends State<Chat> {
 
       if (downloadlist.containsKey(mid)) {
         final tasks = await FlutterDownloader.loadTasksWithRawQuery(
-            query:
-                "SELECT status FROM task WHERE task_id=${downloadlist[mid]}");
+            query: "SELECT status FROM task WHERE task_id=${downloadlist[mid]}");
 
         if (tasks == 4 || tasks == 5) downloadlist.remove(mid);
       }
@@ -286,6 +268,7 @@ class _ChatState extends State<Chat> {
         FileDirectoryPrepare();
         return true;
       }
+      return false; //added by me at 04-09-2021
     } else {
       FileDirectoryPrepare();
       return true;
@@ -301,25 +284,21 @@ class _ChatState extends State<Chat> {
       Directory target = await getApplicationDocumentsDirectory();
       _filePath = target.path.toString();
     } else {
-      Directory downloadsDirectory =
-          await DownloadsPathProvider.downloadsDirectory;
+      Directory downloadsDirectory = (await DownloadsPathProvider.downloadsDirectory)!;
       _filePath = downloadsDirectory.path.toString();
     }
-
   }
 
   Future<String> _findLocalPath() async {
-    final directory = Platform.isAndroid
-        ? await getExternalStorageDirectory()
-        : await getApplicationDocumentsDirectory();
-    return directory.path;
+    final directory =
+        Platform.isAndroid ? await getExternalStorageDirectory() : await getApplicationDocumentsDirectory();
+    return directory!.path;
   }
 
   _imgFromGallery() async {
-    FilePickerResult result =
-        await FilePicker.platform.pickFiles(allowMultiple: true);
+    FilePickerResult result = (await FilePicker.platform.pickFiles(allowMultiple: true))!;
     if (result != null) {
-      files = result.paths.map((path) => File(path)).toList();
+      files = result.paths.map((path) => File(path!)).toList();
       if (mounted) setState(() {});
     } else {
       // User canceled the picker
@@ -364,8 +343,7 @@ class _ChatState extends State<Chat> {
         TICKET_ID: widget.id,
       };
 
-      Response response = await post(getMsgApi, body: data, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+      Response response = await post(getMsgApi, body: data, headers: headers).timeout(Duration(seconds: timeOut));
 
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
@@ -375,8 +353,7 @@ class _ChatState extends State<Chat> {
 
         if (!error) {
           var data = getdata["data"];
-          chatList =
-              (data as List).map((data) => new Model.fromChat(data)).toList();
+          chatList = (data as List).map((data) => new Model.fromChat(data)).toList();
         }
         // setSnackbar(msg);
         if (mounted) setState(() {});
@@ -433,8 +410,7 @@ class _ChatState extends State<Chat> {
                   FloatingActionButton(
                     mini: true,
                     onPressed: () {
-                      if (msgController.text.trim().length > 0 ||
-                          files.length > 0) {
+                      if (msgController.text.trim().length > 0 || files.length > 0) {
                         sendMessage(msgController.text.trim());
                       }
                     },
@@ -474,15 +450,11 @@ class _ChatState extends State<Chat> {
               Card(
                 //margin: EdgeInsets.only(right: message.sender_id == myid ? 10 : 50, left: message.sender_id == myid ? 50 : 10, bottom: 10),
                 elevation: 0.0,
-                color: message.uid == CUR_USERID
-                    ? fontColor.withOpacity(0.1)
-                    : white,
+                color: message.uid == CUR_USERID ? fontColor.withOpacity(0.1) : white,
                 child: Padding(
                   padding: const EdgeInsets.all(5),
                   child: Column(
-                    crossAxisAlignment: message.uid == CUR_USERID
-                        ? CrossAxisAlignment.end
-                        : CrossAxisAlignment.start,
+                    crossAxisAlignment: message.uid == CUR_USERID ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                     children: <Widget>[
                       //_messages[index].issend ? Container() : Center(child: SizedBox(height:20,width: 20,child: new CircularProgressIndicator(backgroundColor: ColorsRes.secondgradientcolor,))),
 
@@ -511,8 +483,7 @@ class _ChatState extends State<Chat> {
                 padding: const EdgeInsets.all(8.0),
                 child: Align(
                   alignment: Alignment.bottomRight,
-                  child: Text((message.date),
-                      style: TextStyle(color: lightBlack, fontSize: 9)),
+                  child: Text((message.date!), style: TextStyle(color: lightBlack, fontSize: 9)),
                 ),
               ),
             ],

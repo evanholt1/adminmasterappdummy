@@ -1,34 +1,33 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:url_launcher/url_launcher.dart';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'Helper/AppBtn.dart';
-import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
-import 'Model/Person_Model.dart';
+import 'Models/Person_Model.dart';
+import 'config/themes/base_theme_colors.dart';
 
 class DeliveryBoy extends StatefulWidget {
   final bool isDelBoy;
 
-  const DeliveryBoy({Key key, this.isDelBoy}) : super(key: key);
+  const DeliveryBoy({Key? key, required this.isDelBoy}) : super(key: key);
   @override
   _DeliveryBoyState createState() => _DeliveryBoyState();
 }
 
-class _DeliveryBoyState extends State<DeliveryBoy>
-    with TickerProviderStateMixin {
+class _DeliveryBoyState extends State<DeliveryBoy> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   // ScrollController controller = new ScrollController();
   List<PersonModel> tempList = [];
-  Animation buttonSqueezeanimation;
-  AnimationController buttonController;
+  late Animation buttonSqueezeanimation;
+  late AnimationController buttonController;
   bool _isNetworkAvail = true;
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      new GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
   List<PersonModel> notiList = [];
   // int offset = 0;
   int total = 0;
@@ -39,16 +38,14 @@ class _DeliveryBoyState extends State<DeliveryBoy>
     Icons.search,
     color: primary,
   );
-  Widget appBarTitle;
-  ScrollController notificationcontroller;
+  late Widget appBarTitle;
+  late ScrollController notificationcontroller;
 
   ///currently is searching
-  bool isSearching;
+  late bool isSearching;
   String _searchText = "", _lastsearch = "";
 
-  bool notificationisloadmore = true,
-      notificationisgettingdata = false,
-      notificationisnodata = false;
+  bool notificationisloadmore = true, notificationisgettingdata = false, notificationisnodata = false;
   int notificationoffset = 0;
 
   @override
@@ -62,8 +59,7 @@ class _DeliveryBoyState extends State<DeliveryBoy>
     //getDetails();
 
     // controller.addListener(_scrollListener);
-    buttonController = new AnimationController(
-        duration: new Duration(milliseconds: 2000), vsync: this);
+    buttonController = new AnimationController(duration: new Duration(milliseconds: 2000), vsync: this);
     notificationcontroller = ScrollController(keepScrollOffset: true);
     notificationcontroller.addListener(_transactionscrollListener);
 
@@ -90,9 +86,8 @@ class _DeliveryBoyState extends State<DeliveryBoy>
             _searchText = _controller.text;
           });
       }
-  
-      if (_lastsearch != _searchText &&
-          (_searchText == '' || (_searchText.length >= 2))) {
+
+      if (_lastsearch != _searchText && (_searchText == '' || (_searchText.length >= 2))) {
         _lastsearch = _searchText;
         notificationisloadmore = true;
         notificationoffset = 0;
@@ -104,12 +99,10 @@ class _DeliveryBoyState extends State<DeliveryBoy>
   }
 
   _transactionscrollListener() {
-    if (notificationcontroller.offset >=
-            notificationcontroller.position.maxScrollExtent &&
+    if (notificationcontroller.offset >= notificationcontroller.position.maxScrollExtent &&
         !notificationcontroller.position.outOfRange) {
       if (mounted)
         setState(() {
-       
           notificationisloadmore = true;
           getDetails();
         });
@@ -126,11 +119,12 @@ class _DeliveryBoyState extends State<DeliveryBoy>
                 ? shimmer()
                 : notificationisnodata
                     ? Padding(
-                        padding: const EdgeInsetsDirectional.only(
-                            top: kToolbarHeight),
+                        padding: const EdgeInsetsDirectional.only(top: kToolbarHeight),
                         child: Center(child: Text('No Items Found')))
                     : NotificationListener<ScrollNotification>(
-                        onNotification: (scrollNotification) {},
+                        onNotification: (scrollNotification) {
+                          return true;
+                        },
                         child: Column(
                           children: <Widget>[
                             Expanded(
@@ -149,29 +143,22 @@ class _DeliveryBoyState extends State<DeliveryBoy>
                                         //     ? Center(child: CircularProgressIndicator())
                                         //     : listItem(index);
 
-                                        PersonModel item;
+                                        PersonModel? item;
                                         try {
-                                          item = notiList.isEmpty
-                                              ? null
-                                              : notiList[index];
+                                          item = notiList.isEmpty ? null : notiList[index];
                                           if (notificationisloadmore &&
                                               index == (notiList.length - 1) &&
-                                              notificationcontroller
-                                                      .position.pixels <=
-                                                  0) {
+                                              notificationcontroller.position.pixels <= 0) {
                                             getDetails();
                                           }
                                         } on Exception catch (_) {}
 
-                                        return item == null
-                                            ? Container()
-                                            : listItem(index);
+                                        return item == null ? Container() : listItem(index);
                                       },
                                     ))),
                             notificationisgettingdata
                                 ? Padding(
-                                    padding: EdgeInsetsDirectional.only(
-                                        top: 5, bottom: 5),
+                                    padding: EdgeInsetsDirectional.only(top: 5, bottom: 5),
                                     child: CircularProgressIndicator(),
                                   )
                                 : Container(),
@@ -238,7 +225,6 @@ class _DeliveryBoyState extends State<DeliveryBoy>
         IconButton(
           icon: iconSearch,
           onPressed: () {
-          
             if (!mounted) return;
             setState(() {
               if (iconSearch.icon == Icons.search) {
@@ -262,8 +248,6 @@ class _DeliveryBoyState extends State<DeliveryBoy>
                 _handleSearchStart();
               } else {
                 _handleSearchEnd();
-
-              
               }
             });
           },
@@ -304,7 +288,6 @@ class _DeliveryBoyState extends State<DeliveryBoy>
   Widget listItem(int index) {
     PersonModel model = notiList[index];
 
- 
     String add = model.street + " " + model.area + " " + model.city;
 
     return Card(
@@ -326,8 +309,7 @@ class _DeliveryBoyState extends State<DeliveryBoy>
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   decoration: BoxDecoration(
                       color: model.status == "1" ? Colors.green : Colors.red,
-                      borderRadius:
-                          new BorderRadius.all(const Radius.circular(4.0))),
+                      borderRadius: new BorderRadius.all(const Radius.circular(4.0))),
                   child: Text(
                     model.status == "1" ? "Active" : "Deactive",
                     style: TextStyle(color: white, fontSize: 11),
@@ -344,22 +326,15 @@ class _DeliveryBoyState extends State<DeliveryBoy>
                       add.length > 2
                           ? Padding(
                               padding: EdgeInsets.only(top: 5),
-                              child: Text(model.street +
-                                  " " +
-                                  model.area +
-                                  " " +
-                                  model.city))
+                              child: Text(model.street + " " + model.area + " " + model.city))
                           : Container(),
                       model.email != ""
                           ? InkWell(
                               child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
                                 child: Text(
                                   model.email,
-                                  style: TextStyle(
-                                      color: fontColor,
-                                      decoration: TextDecoration.underline),
+                                  style: TextStyle(color: fontColor, decoration: TextDecoration.underline),
                                 ),
                               ),
                               onTap: () {
@@ -370,9 +345,7 @@ class _DeliveryBoyState extends State<DeliveryBoy>
                       InkWell(
                         child: Text(
                           model.mobile,
-                          style: TextStyle(
-                              color: fontColor,
-                              decoration: TextDecoration.underline),
+                          style: TextStyle(color: fontColor, decoration: TextDecoration.underline),
                         ),
                         onTap: () {
                           _launchCaller(model.mobile);
@@ -446,13 +419,9 @@ class _DeliveryBoyState extends State<DeliveryBoy>
               SEARCH: _searchText.trim(),
             };
 
-            Response response = await post(
-                    widget.isDelBoy ? getDelBoyApi : getCustApi,
-                    headers: headers,
-                    body: parameter)
-                .timeout(Duration(seconds: timeOut));
-
-          
+            Response response =
+                await post(widget.isDelBoy ? getDelBoyApi : getCustApi, headers: headers, body: parameter)
+                    .timeout(Duration(seconds: timeOut));
 
             if (response.statusCode == 200) {
               var getdata = json.decode(response.body);
@@ -466,9 +435,7 @@ class _DeliveryBoyState extends State<DeliveryBoy>
                 var mainList = getdata["data"];
 
                 if (mainList.length != 0) {
-                  tempList = (mainList as List)
-                      .map((data) => new PersonModel.fromJson(data))
-                      .toList();
+                  tempList = (mainList as List).map((data) => new PersonModel.fromJson(data)).toList();
 
                   notiList.addAll(tempList);
                   notificationisloadmore = true;

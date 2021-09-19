@@ -1,20 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/rendering.dart';
 
-import 'Chat.dart';
-import 'Helper/Color.dart';
-
+import 'package:admin_eshop/Chat.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:http/http.dart';
 
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/SimBtn.dart';
 import 'Helper/String.dart';
-import 'Model/Model.dart';
+import 'Models/Model.dart';
+import 'config/themes/base_theme_colors.dart';
 
 class CustomerSupport extends StatefulWidget {
   @override
@@ -23,15 +20,15 @@ class CustomerSupport extends StatefulWidget {
 
 class _CustomerSupportState extends State<CustomerSupport> {
   bool _isLoading = true, _isProgress = false;
-  Animation buttonSqueezeanimation;
-  AnimationController buttonController;
+  late Animation buttonSqueezeanimation;
+  late AnimationController buttonController;
   bool _isNetworkAvail = true;
   List<Model> typeList = [];
   List<Model> ticketList = [];
   List<Model> statusList = [];
   List<Model> tempList = [];
-  String type, email, title, desc, status, id;
-  FocusNode nameFocus, emailFocus, descFocus;
+  late String? type, email, title, desc, status, id;
+  late FocusNode nameFocus, emailFocus, descFocus;
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final descController = TextEditingController();
@@ -40,7 +37,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
 
   ScrollController controller = new ScrollController();
   int offset = 0;
-  int total = 0,curEdit;
+  late int total = 0, curEdit;
   bool isLoadingmore = true;
 
   @override
@@ -56,8 +53,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
     controller = ScrollController();
     controller.addListener(() {
       setState(() {
-        if (controller.offset >= controller.position.maxScrollExtent &&
-            !controller.position.outOfRange) {
+        if (controller.offset >= controller.position.maxScrollExtent && !controller.position.outOfRange) {
           isLoadingmore = true;
 
           if (offset < total) getTicket();
@@ -114,19 +110,13 @@ class _CustomerSupportState extends State<CustomerSupport> {
                             : Container(),
                         ticketList.length > 0
                             ? ListView.separated(
-                                separatorBuilder:
-                                    (BuildContext context, int index) =>
-                                        Divider(),
+                                separatorBuilder: (BuildContext context, int index) => Divider(),
                                 physics: NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
-                                itemCount: (offset < total)
-                                    ? ticketList.length + 1
-                                    : ticketList.length,
+                                itemCount: (offset < total) ? ticketList.length + 1 : ticketList.length,
                                 itemBuilder: (context, index) {
-                                  return (index == ticketList.length &&
-                                          isLoadingmore)
-                                      ? Center(
-                                          child: CircularProgressIndicator())
+                                  return (index == ticketList.length && isLoadingmore)
+                                      ? Center(child: CircularProgressIndicator())
                                       : ticketItem(index);
                                 })
                             : getNoItem()
@@ -142,13 +132,9 @@ class _CustomerSupportState extends State<CustomerSupport> {
     return DropdownButtonFormField(
       iconEnabledColor: fontColor,
       isDense: true,
-      
       hint: new Text(
         'Select type',
-        style: Theme.of(this.context)
-            .textTheme
-            .subtitle2
-            .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+        style: Theme.of(this.context).textTheme.subtitle2!.copyWith(color: fontColor, fontWeight: FontWeight.normal),
       ),
       decoration: InputDecoration(
         filled: true,
@@ -165,7 +151,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
         ),
       ),
       value: type,
-      style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
+      style: Theme.of(context).textTheme.subtitle2!.copyWith(color: fontColor),
       onChanged: null,
       items: typeList.map((Model user) {
         return DropdownMenuItem<String>(
@@ -208,7 +194,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
   }
 
   bool validateAndSave() {
-    final form = _formkey.currentState;
+    final FormState form = _formkey.currentState!;
     form.save();
     if (form.validate()) {
       return true;
@@ -228,19 +214,17 @@ class _CustomerSupportState extends State<CustomerSupport> {
         textInputAction: TextInputAction.next,
         controller: emailController,
         style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
-        validator: (val) => validateEmail(val, EMAIL_REQUIRED, VALID_EMAIL),
-        onSaved: (String value) {
-          email = value;
+        validator: (val) => validateEmail(val!, EMAIL_REQUIRED, VALID_EMAIL),
+        onSaved: (String? value) {
+          email = value!;
         },
         onFieldSubmitted: (v) {
           _fieldFocusChange(context, emailFocus, nameFocus);
         },
         decoration: InputDecoration(
           hintText: 'Email',
-          hintStyle: Theme.of(this.context)
-              .textTheme
-              .subtitle2
-              .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+          hintStyle:
+              Theme.of(this.context).textTheme.subtitle2!.copyWith(color: fontColor, fontWeight: FontWeight.normal),
           filled: true,
           fillColor: lightWhite,
           contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -269,18 +253,16 @@ class _CustomerSupportState extends State<CustomerSupport> {
         controller: nameController,
         style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
         validator: (val) => validateField(val),
-        onSaved: (String value) {
-          title = value;
+        onSaved: (String? value) {
+          title = value!;
         },
         onFieldSubmitted: (v) {
           _fieldFocusChange(context, emailFocus, nameFocus);
         },
         decoration: InputDecoration(
           hintText: 'Subject',
-          hintStyle: Theme.of(this.context)
-              .textTheme
-              .subtitle2
-              .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+          hintStyle:
+              Theme.of(this.context).textTheme.subtitle2!.copyWith(color: fontColor, fontWeight: FontWeight.normal),
           filled: true,
           fillColor: lightWhite,
           contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -309,18 +291,16 @@ class _CustomerSupportState extends State<CustomerSupport> {
         maxLines: null,
         style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
         validator: (val) => validateField(val),
-        onSaved: (String value) {
-          desc = value;
+        onSaved: (String? value) {
+          desc = value!;
         },
         onFieldSubmitted: (v) {
           _fieldFocusChange(context, emailFocus, nameFocus);
         },
         decoration: InputDecoration(
           hintText: 'Description',
-          hintStyle: Theme.of(this.context)
-              .textTheme
-              .subtitle2
-              .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+          hintStyle:
+              Theme.of(this.context).textTheme.subtitle2!.copyWith(color: fontColor, fontWeight: FontWeight.normal),
           filled: true,
           fillColor: lightWhite,
           contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -337,8 +317,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
     );
   }
 
-  _fieldFocusChange(
-      BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
+  _fieldFocusChange(BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
     currentFocus.unfocus();
     FocusScope.of(context).requestFocus(nextFocus);
   }
@@ -347,8 +326,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        Response response = await post(getTicketTypeApi, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+        Response response = await post(getTicketTypeApi, headers: headers).timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -356,9 +334,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
         if (!error) {
           var data = getdata["data"];
 
-          typeList = (data as List)
-              .map((data) => new Model.fromSupport(data))
-              .toList();
+          typeList = (data as List).map((data) => new Model.fromSupport(data)).toList();
         } else {
           setSnackbar(msg);
         }
@@ -387,10 +363,8 @@ class _CustomerSupportState extends State<CustomerSupport> {
           OFFSET: offset.toString(),
         };
 
-   
         Response response =
-            await post(getTicketApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+            await post(getTicketApi, body: parameter, headers: headers).timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -402,16 +376,12 @@ class _CustomerSupportState extends State<CustomerSupport> {
           if ((offset) < total) {
             tempList.clear();
             var data = getdata["data"];
-            tempList = (data as List)
-                .map((data) => new Model.fromTicket(data))
-                .toList();
+            tempList = (data as List).map((data) => new Model.fromTicket(data)).toList();
 
             ticketList.addAll(tempList);
 
             offset = offset + perPage;
           }
-
-       
         } else {
           setSnackbar(msg);
           isLoadingmore = false;
@@ -461,31 +431,23 @@ class _CustomerSupportState extends State<CustomerSupport> {
     try {
       var data = {TICKET_ID: id, STATUS: status};
 
-     
-
-      Response response =
-          await post(editTicketApi, body: data, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      Response response = await post(editTicketApi, body: data, headers: headers).timeout(Duration(seconds: timeOut));
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
         String msg = getdata["message"];
 
-       
-             if (!error) {
+        if (!error) {
           var data = getdata["data"];
           if (mounted)
             setState(() {
-            
-            
-                ticketList[curEdit] = Model.fromTicket(data[0]);
-            
+              ticketList[curEdit] = Model.fromTicket(data[0]);
+
               _isProgress = false;
               clearAll();
             });
         }
-          
 
         setSnackbar(msg);
       }
@@ -506,7 +468,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
 
   Widget ticketItem(int index) {
     Color back;
-    String status = ticketList[index].status;
+    String status = ticketList[index].status!;
     //1 -> pending, 2 -> opened, 3 -> resolved, 4 -> closed, 5 -> reopened
     if (status == "1") {
       back = Colors.orange;
@@ -533,7 +495,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
               MaterialPageRoute(
                 builder: (context) => Chat(
                   id: ticketList[index].id,
-                  status: ticketList[index].status,
+                  status: ticketList[index].status!,
                 ),
               ));
         },
@@ -544,15 +506,13 @@ class _CustomerSupportState extends State<CustomerSupport> {
             children: [
               Row(
                 children: [
-                  Text("Type : " + ticketList[index].type),
+                  Text("Type : " + ticketList[index].type!),
                   Spacer(),
                   Container(
                     margin: EdgeInsets.only(left: 8),
                     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                    decoration: BoxDecoration(
-                        color: back,
-                        borderRadius:
-                            new BorderRadius.all(const Radius.circular(4.0))),
+                    decoration:
+                        BoxDecoration(color: back, borderRadius: new BorderRadius.all(const Radius.circular(4.0))),
                     child: Text(
                       status,
                       style: TextStyle(color: white),
@@ -562,10 +522,9 @@ class _CustomerSupportState extends State<CustomerSupport> {
               ),
               Text("Subject : " + ticketList[index].title),
               Text(
-                "Description : " + ticketList[index].desc,
-              
+                "Description : " + ticketList[index].desc!,
               ),
-              Text("Date : " + ticketList[index].date),
+              Text("Date : " + ticketList[index].date!),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: Row(
@@ -573,12 +532,9 @@ class _CustomerSupportState extends State<CustomerSupport> {
                     GestureDetector(
                         child: Container(
                           margin: EdgeInsetsDirectional.only(start: 8),
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                           decoration: BoxDecoration(
-                              color: lightWhite,
-                              borderRadius: new BorderRadius.all(
-                                  const Radius.circular(4.0))),
+                              color: lightWhite, borderRadius: new BorderRadius.all(const Radius.circular(4.0))),
                           child: Text(
                             'EDIT',
                             maxLines: 1,
@@ -588,24 +544,21 @@ class _CustomerSupportState extends State<CustomerSupport> {
                         ),
                         onTap: () {
                           setState(() {
-                        curEdit = index;
+                            curEdit = index;
                             show = true;
                             id = ticketList[index].id;
-                            emailController.text = ticketList[index].email;
+                            emailController.text = ticketList[index].email!;
                             nameController.text = ticketList[index].title;
-                            descController.text = ticketList[index].desc;
+                            descController.text = ticketList[index].desc!;
                             type = ticketList[index].typeId;
                           });
                         }),
                     GestureDetector(
                         child: Container(
                           margin: EdgeInsetsDirectional.only(start: 8),
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                           decoration: BoxDecoration(
-                              color: lightWhite,
-                              borderRadius: new BorderRadius.all(
-                                  const Radius.circular(4.0))),
+                              color: lightWhite, borderRadius: new BorderRadius.all(const Radius.circular(4.0))),
                           child: Text(
                             'CHAT',
                             maxLines: 1,
@@ -619,7 +572,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
                               MaterialPageRoute(
                                 builder: (context) => Chat(
                                   id: ticketList[index].id,
-                                  status: ticketList[index].status,
+                                  status: ticketList[index].status!,
                                 ),
                               ));
                         }),
@@ -641,10 +594,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
         isDense: true,
         hint: new Text(
           'Select Type',
-          style: Theme.of(this.context)
-              .textTheme
-              .subtitle2
-              .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+          style: Theme.of(this.context).textTheme.subtitle2!.copyWith(color: fontColor, fontWeight: FontWeight.normal),
         ),
         decoration: InputDecoration(
           filled: true,
@@ -661,8 +611,8 @@ class _CustomerSupportState extends State<CustomerSupport> {
           ),
         ),
         value: status,
-        style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
-        onChanged: (String newValue) {
+        style: Theme.of(context).textTheme.subtitle2!.copyWith(color: fontColor),
+        onChanged: (String? newValue) {
           if (mounted)
             setState(() {
               status = newValue;

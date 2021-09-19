@@ -1,34 +1,21 @@
 import 'package:intl/intl.dart';
 
 import '../Helper/String.dart';
-import 'Section_Model.dart';
 
 class Model {
-  String id,
-      type,
-      typeId,
-      image,
-      fromTime,
-      lastTime,
-      title,
-      desc,
-      status,
-      email,
-      date,
-      msg,
-      uid;
+  String id, title;
+  String? type, typeId, image, fromTime, lastTime, desc, status, email, date, msg, name, banner, uid;
   var list;
-  String name, banner;
-  List<attachment> attach;
+  List<attachment>? attach;
   Model(
-      {this.id,
+      {required this.id,
       this.type,
       this.typeId,
       this.image,
       this.name,
       this.banner,
       this.list,
-      this.title,
+      required this.title,
       this.fromTime,
       this.desc,
       this.email,
@@ -38,8 +25,6 @@ class Model {
       this.attach,
       this.uid,
       this.date});
-
-  
 
   factory Model.fromTicket(Map<String, dynamic> parsedJson) {
     String date = parsedJson[DATE_CREATED];
@@ -70,8 +55,7 @@ class Model {
     if (listContent == null || listContent.isEmpty)
       attachList = [];
     else
-      attachList =
-          listContent.map((data) => new attachment.setJson(data)).toList();
+      attachList = listContent.map((data) => new attachment.setJson(data)).toList();
 
     String date = parsedJson[DATE_CREATED];
 
@@ -85,14 +69,12 @@ class Model {
         date: date,
         attach: attachList);
   }
-
-
 }
 
 class attachment {
   String media, type;
 
-  attachment({this.media, this.type});
+  attachment({required this.media, required this.type});
 
   factory attachment.setJson(Map<String, dynamic> parsedJson) {
     return new attachment(
