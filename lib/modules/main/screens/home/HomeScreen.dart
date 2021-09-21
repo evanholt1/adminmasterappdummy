@@ -95,7 +95,7 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                 backgroundColor: AppColors.white),
             drawer: HomeScreenDrawer(),
             body: _isNetworkAvail
-                ? _isLoading && context.watch<CardsCountsProvider>().loading
+                ? _isLoading || context.watch<CardsCountsProvider>().loading
                     ? shimmer()
                     : RefreshIndicator(
                         key: _refreshIndicatorKey,

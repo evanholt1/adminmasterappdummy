@@ -84,7 +84,7 @@ class OrderListScreenOrder extends StatelessWidget {
                     Row(
                       children: [
                         Icon(Icons.money, size: 14),
-                        Text("Price: " + "JD" + " " + order.totalPrice.toString()),
+                        Text("Price: " + "JD" + " " + order.totalPrice.toStringAsFixed(2)),
                       ],
                     ),
                     Spacer(),

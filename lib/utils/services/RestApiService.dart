@@ -19,6 +19,8 @@ class RestApiService {
   static Future<http.Response> post(String path,
       [Object? requestBody, Map<String, dynamic> queryParams = const {}]) async {
     final url = Uri.https(ApiPaths.base, path, queryParams);
+    print('post url is $url');
+    print('post url payload is $requestBody');
     return retry(
         () => http.post(url, headers: AppConstants.apiHeaders, body: requestBody).timeout(Duration(seconds: 4)),
         retryIf: (e) => e is SocketException || e is TimeoutException,

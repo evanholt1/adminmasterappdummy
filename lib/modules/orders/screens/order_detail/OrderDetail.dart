@@ -310,13 +310,17 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
+                                    if(widget.order.status.index < 2)
                                     OrderDetailScreenStatusButton(
                                         currStatus: widget.order.status, orderId: widget.order.id),
+                                    Spacer(),
+                                    if(widget.order.status.index != 4 && widget.order.status.index != 5)
                                     OrderDetailScreenStatusButton(
                                         currStatus: widget.order.status, cancelled: true, orderId: widget.order.id),
                                   ],
                                 ),
                               ),
+                              SizedBox(height: 4.0.h),
                             ],
                           ),
                         ),
@@ -663,7 +667,7 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                     children: [
                       Text(PRICE_LBL + " " + ":",
                           style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2)),
-                      Text(CUR_CURRENCY + " " + widget.order.subTotal.toString(),
+                      Text(CUR_CURRENCY + " " + widget.order.subTotal!.toStringAsFixed(2),
                           style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2))
                     ],
                   ),
@@ -675,7 +679,7 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                   children: [
                     Text(DELIVERY_CHARGE + " " + ":",
                         style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2)),
-                    Text("+ " + CUR_CURRENCY + " " + widget.order.deliveryFee.toString(),
+                    Text("+ " + CUR_CURRENCY + " " + widget.order.deliveryFee.toStringAsFixed(2),
                         style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2))
                   ],
                 ),
@@ -689,7 +693,7 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                     // Text(TAXPER + " (" + widget.model.taxPer + ")" + " " + ":",
                     //     style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2)),
                     Text("Tax", style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2)),
-                    Text("+ " + CUR_CURRENCY + " " + widget.order.tax.toString(),
+                    Text("+ " + CUR_CURRENCY + " " + widget.order.tax.toStringAsFixed(2),
                         style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2))
                   ],
                 ),
@@ -731,7 +735,7 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                             .textTheme
                             .button!
                             .copyWith(color: lightBlack, fontWeight: FontWeight.bold)),
-                    Text(CUR_CURRENCY + " " + widget.order.totalPrice.toString(),
+                    Text(CUR_CURRENCY + " " + widget.order.totalPrice.toStringAsFixed(2),
                         style: Theme.of(context)
                             .textTheme
                             .button!

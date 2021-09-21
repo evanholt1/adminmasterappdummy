@@ -1,9 +1,10 @@
+import 'package:admin_eshop/Models/driver.dart';
 import 'package:admin_eshop/modules/orders/enums/order_status.dart';
 
 class Order {
   final bool reviewed;
   final List<OrderItem> items;
-  final String? driver;
+  final Driver? driver;
   final String id;
   final String username;
   final String? userPhoneNumber;
@@ -45,7 +46,7 @@ class Order {
 
   Order.fromJson(Map<String, dynamic> json)
       : reviewed = json['reviewed'],
-        driver = json['driver'],
+        driver = json['driver'] == null ? null : Driver.fromJson(json['driver']),
         items = OrderItem.listFromJson(json['items'] as List),
         username = json['user']['name'],
         userPhoneNumber = json['user.phone_number'],
