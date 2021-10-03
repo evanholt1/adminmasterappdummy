@@ -29,10 +29,25 @@ class AddonCategory extends Equatable {
         name = LocalizedText.fromJson(json['name']),
         maxSelection = json['max_selection'],
         minSelection = json['min_selection'],
-        options = (json['options'] as List).map((opJson) => AddonOption.fromJson(opJson)).toList();
+        options = (json['options'] as List)
+            .map((opJson) => AddonOption.fromJson(opJson))
+            .toList();
 
-  static List<AddonCategory> addonCategoriesFromJson(List json) => json.map((e) => AddonCategory.fromJson(e)).toList();
+  static List<AddonCategory> addonCategoriesFromJson(List json) =>
+      json.map((e) => AddonCategory.fromJson(e)).toList();
 
   @override
   List<Object?> get props => [id];
+
+  static List<AddonCategory> copyList(List<AddonCategory> addonCats) {
+    List<AddonCategory> newList = [];
+    addonCats.forEach((element) => AddonCategory(
+          id: element.id,
+          name: LocalizedText.copy(element.name),
+          minSelection: element.minSelection,
+          maxSelection: element.maxSelection,
+          options: AddonOption.copyList(element.options),
+        ));
+    return newList;
+  }
 }

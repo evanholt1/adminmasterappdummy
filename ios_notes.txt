@@ -1,0 +1,2 @@
+localizations for ios..
+https://flutter.dev/docs/development/accessibility-and-localization/internationalization

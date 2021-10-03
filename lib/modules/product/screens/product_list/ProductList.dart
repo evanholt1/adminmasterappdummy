@@ -10,11 +10,14 @@ import 'package:admin_eshop/Search.dart';
 import 'package:admin_eshop/config/themes/base_theme_colors.dart';
 import 'package:admin_eshop/modules/product/models/DBProduct.dart';
 import 'package:admin_eshop/modules/product/providers/product_list/product_list_cubit.dart';
+import 'package:admin_eshop/modules/product/providers/selected_product_category/SelectedProductCategoryProvider.dart';
+import 'package:admin_eshop/modules/product/screens/product_list/widgets/product_list_screen_content.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
 class ProductList extends StatefulWidget {
@@ -45,7 +48,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   bool _isFirstLoad = true;
   String filter = "";
   String selId = "";
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
   Animation? buttonSqueezeanimation;
   AnimationController? buttonController;
   bool listType = true;
@@ -59,7 +63,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
     flag = widget.flag;
     getProduct("0");
 
-    buttonController = new AnimationController(duration: new Duration(milliseconds: 2000), vsync: this);
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
 
     buttonSqueezeanimation = new Tween(
       begin: 70.0.w,
@@ -89,27 +94,26 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ProductListCubit>(
-      create: (_) => ProductListCubit(),
-      child: Scaffold(
-          backgroundColor: lightWhite,
-          appBar: getAppbar(),
-          key: _scaffoldKey,
-          body: _isNetworkAvail
-              ? BlocBuilder<ProductListCubit, ProductListState>(builder: (context, state) {
-                  if (state is ProductListGetSuccess)
-                    return Stack(
-                      children: <Widget>[
-                        //_showForm(context, state.categories),
-                        //showCircularProgress(_isProgress, primary)
-                      ],
-                    );
-                  else if (state is ProductListLoadInProgress)
-                    return shimmer();
-                  else
-                    return Container();
-                })
-              : noInternet(context)),
+    return ChangeNotifierProvider<SelectedProductCategoryProvider>(
+      create: (_) => SelectedProductCategoryProvider(),
+      child: BlocProvider<ProductListCubit>(
+        create: (_) => ProductListCubit(),
+        child: Scaffold(
+            backgroundColor: lightWhite,
+            appBar: getAppbar(),
+            key: _scaffoldKey,
+            body: _isNetworkAvail
+                ? BlocBuilder<ProductListCubit, ProductListState>(
+                    builder: (context, state) {
+                    if (state is ProductListGetSuccess)
+                      return ProductListScreenContent();
+                    else if (state is ProductListLoadInProgress)
+                      return shimmer();
+                    else
+                      return Container();
+                  })
+                : noInternet(context)),
+      ),
     );
   }
 
@@ -152,18 +156,26 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             primary: primary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(80.0)),
           ),
           onPressed: () {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => super.widget));
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (BuildContext context) => super.widget));
           },
           child: Ink(
             child: Container(
-              constraints: BoxConstraints(maxWidth: 100.0.w / 1.2, minHeight: 45),
+              constraints:
+                  BoxConstraints(maxWidth: 100.0.w / 1.2, minHeight: 45),
               alignment: Alignment.center,
               child: Text(NO_INTERNET,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headline6!.copyWith(color: white, fontWeight: FontWeight.normal)),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline6!
+                      .copyWith(color: white, fontWeight: FontWeight.normal)),
             ),
           ),
         )));
@@ -355,7 +367,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           }
 
           Response response =
-              await post(getProductApi, headers: headers, body: parameter).timeout(Duration(seconds: timeOut));
+              await post(getProductApi, headers: headers, body: parameter)
+                  .timeout(Duration(seconds: timeOut));
 
           if (response.statusCode == 200) {
             var getdata = json.decode(response.body);
@@ -373,7 +386,9 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                 tempList.clear();
 
                 var data = getdata["data"];
-                tempList = (data as List).map((data) => new DBProduct.fromJson(data)).toList();
+                tempList = (data as List)
+                    .map((data) => new DBProduct.fromJson(data))
+                    .toList();
 
                 ///
                 //getAvailVarient();
@@ -472,124 +487,127 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           ),
         );
       }),
-      actions: <Widget>[
-        Container(
-          margin: EdgeInsets.symmetric(vertical: 10),
-          decoration: shadow(),
-          child: Card(
-            elevation: 0,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(4),
-              onTap: () {
-                stockFilter();
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Icon(
-                  Icons.filter_alt_outlined,
-                  color: primary,
-                  size: 22,
-                ),
-              ),
-            ),
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.symmetric(vertical: 10),
-          decoration: shadow(),
-          child: Card(
-            elevation: 0,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(4),
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Search(),
-                    ));
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Icon(
-                  Icons.search,
-                  color: primary,
-                  size: 22,
-                ),
-              ),
-            ),
-          ),
-        ),
-        Container(
-            margin: EdgeInsets.symmetric(vertical: 10),
-            decoration: shadow(),
-            child: Card(
-                elevation: 0,
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Icon(
-                          listType ? Icons.grid_view : Icons.list,
-                          color: primary,
-                          size: 22,
-                        ),
-                      ),
-                      onTap: () {
-                        productList.length != 0
-                            ? setState(() {
-                                listType = !listType;
-                              })
-                            : null;
-                      }),
-                ))),
-        Container(
-            width: 40,
-            margin: EdgeInsetsDirectional.only(top: 10, bottom: 10, end: 5),
-            decoration: shadow(),
-            child: Card(
-                elevation: 0,
-                child: Material(
-                    color: Colors.transparent,
-                    child: PopupMenuButton(
-                      padding: EdgeInsets.zero,
-                      onSelected: (value) {
-                        switch (value) {
-                          case 0:
-                            return filterDialog();
-                            break;
-                          case 1:
-                            return sortDialog();
-                            break;
-                        }
-                      },
-                      itemBuilder: (BuildContext context) => <PopupMenuEntry>[
-                        PopupMenuItem(
-                          value: 0,
-                          child: ListTile(
-                            dense: true,
-                            contentPadding: EdgeInsetsDirectional.only(start: 0.0, end: 0.0),
-                            leading: Icon(
-                              Icons.tune,
-                              color: fontColor,
-                              size: 20,
-                            ),
-                            title: Text('Filter'),
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 1,
-                          child: ListTile(
-                            dense: true,
-                            contentPadding: EdgeInsetsDirectional.only(start: 0.0, end: 0.0),
-                            leading: Icon(Icons.sort, color: fontColor, size: 20),
-                            title: Text('Sort'),
-                          ),
-                        ),
-                      ],
-                    )))),
-      ],
+      // actions: <Widget>[
+      //   Container(
+      //     margin: EdgeInsets.symmetric(vertical: 10),
+      //     decoration: shadow(),
+      //     child: Card(
+      //       elevation: 0,
+      //       child: InkWell(
+      //         borderRadius: BorderRadius.circular(4),
+      //         onTap: () {
+      //           stockFilter();
+      //         },
+      //         child: Padding(
+      //           padding: const EdgeInsets.all(4.0),
+      //           child: Icon(
+      //             Icons.filter_alt_outlined,
+      //             color: primary,
+      //             size: 22,
+      //           ),
+      //         ),
+      //       ),
+      //     ),
+      //   ),
+      //   Container(
+      //     margin: EdgeInsets.symmetric(vertical: 10),
+      //     decoration: shadow(),
+      //     child: Card(
+      //       elevation: 0,
+      //       child: InkWell(
+      //         borderRadius: BorderRadius.circular(4),
+      //         onTap: () {
+      //           Navigator.push(
+      //               context,
+      //               MaterialPageRoute(
+      //                 builder: (context) => Search(),
+      //               ));
+      //         },
+      //         child: Padding(
+      //           padding: const EdgeInsets.all(4.0),
+      //           child: Icon(
+      //             Icons.search,
+      //             color: primary,
+      //             size: 22,
+      //           ),
+      //         ),
+      //       ),
+      //     ),
+      //   ),
+      //   Container(
+      //       margin: EdgeInsets.symmetric(vertical: 10),
+      //       decoration: shadow(),
+      //       child: Card(
+      //           elevation: 0,
+      //           child: Material(
+      //             color: Colors.transparent,
+      //             child: InkWell(
+      //                 borderRadius: BorderRadius.circular(4),
+      //                 child: Padding(
+      //                   padding: const EdgeInsets.all(4.0),
+      //                   child: Icon(
+      //                     listType ? Icons.grid_view : Icons.list,
+      //                     color: primary,
+      //                     size: 22,
+      //                   ),
+      //                 ),
+      //                 onTap: () {
+      //                   productList.length != 0
+      //                       ? setState(() {
+      //                           listType = !listType;
+      //                         })
+      //                       : null;
+      //                 }),
+      //           ))),
+      //   Container(
+      //       width: 40,
+      //       margin: EdgeInsetsDirectional.only(top: 10, bottom: 10, end: 5),
+      //       decoration: shadow(),
+      //       child: Card(
+      //           elevation: 0,
+      //           child: Material(
+      //               color: Colors.transparent,
+      //               child: PopupMenuButton(
+      //                 padding: EdgeInsets.zero,
+      //                 onSelected: (value) {
+      //                   switch (value) {
+      //                     case 0:
+      //                       return filterDialog();
+      //                       break;
+      //                     case 1:
+      //                       return sortDialog();
+      //                       break;
+      //                   }
+      //                 },
+      //                 itemBuilder: (BuildContext context) => <PopupMenuEntry>[
+      //                   PopupMenuItem(
+      //                     value: 0,
+      //                     child: ListTile(
+      //                       dense: true,
+      //                       contentPadding: EdgeInsetsDirectional.only(
+      //                           start: 0.0, end: 0.0),
+      //                       leading: Icon(
+      //                         Icons.tune,
+      //                         color: fontColor,
+      //                         size: 20,
+      //                       ),
+      //                       title: Text('Filter'),
+      //                     ),
+      //                   ),
+      //                   PopupMenuItem(
+      //                     value: 1,
+      //                     child: ListTile(
+      //                       dense: true,
+      //                       contentPadding: EdgeInsetsDirectional.only(
+      //                           start: 0.0, end: 0.0),
+      //                       leading:
+      //                           Icon(Icons.sort, color: fontColor, size: 20),
+      //                       title: Text('Sort'),
+      //                     ),
+      //                   ),
+      //                 ],
+      //               )))),
+      // ],
     );
   }
 
@@ -1345,7 +1363,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Text(CUR_CURRENCY + " " + price.toString(), style: Theme.of(context).textTheme.headline6),
+      child: Text(CUR_CURRENCY + " " + price.toString(),
+          style: Theme.of(context).textTheme.headline6),
     );
   }
 
@@ -1362,13 +1381,14 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           children: <Widget>[
             Text(
               CUR_CURRENCY + " " + price1,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyText2!
-                  .copyWith(decoration: TextDecoration.lineThrough, letterSpacing: 0),
+              style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                  decoration: TextDecoration.lineThrough, letterSpacing: 0),
             ),
             Text(" | " + off.toStringAsFixed(2) + "% off",
-                style: Theme.of(context).textTheme.overline!.copyWith(color: primary, letterSpacing: 0)),
+                style: Theme.of(context)
+                    .textTheme
+                    .overline!
+                    .copyWith(color: primary, letterSpacing: 0)),
           ],
         ),
       );
@@ -1382,7 +1402,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
       child: Text(
         name,
-        style: Theme.of(context).textTheme.subtitle1!.copyWith(color: lightBlack),
+        style:
+            Theme.of(context).textTheme.subtitle1!.copyWith(color: lightBlack),
       ),
     );
   }
@@ -1397,19 +1418,25 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             ),
             child: new AlertDialog(
                 elevation: 2.0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0))),
                 contentPadding: const EdgeInsets.all(0.0),
                 content: SingleChildScrollView(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     Padding(
-                        padding: EdgeInsetsDirectional.only(top: 19.0, bottom: 16.0),
+                        padding:
+                            EdgeInsetsDirectional.only(top: 19.0, bottom: 16.0),
                         child: Text(
                           'Stock Filter',
                           style: Theme.of(context).textTheme.headline6,
                         )),
                     Divider(color: lightBlack),
                     TextButton(
-                        child: Text('All', style: Theme.of(context).textTheme.subtitle1!.copyWith(color: lightBlack)),
+                        child: Text('All',
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle1!
+                                .copyWith(color: lightBlack)),
                         onPressed: () {
                           flag = '';
                           if (mounted)
@@ -1424,8 +1451,11 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         }),
                     Divider(color: lightBlack),
                     TextButton(
-                        child:
-                            Text('Sold out', style: Theme.of(context).textTheme.subtitle1!.copyWith(color: lightBlack)),
+                        child: Text('Sold out',
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle1!
+                                .copyWith(color: lightBlack)),
                         onPressed: () {
                           flag = 'sold';
                           if (mounted)
@@ -1442,7 +1472,10 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                     TextButton(
                         child: Text(
                           'Low in stock',
-                          style: Theme.of(context).textTheme.subtitle1!.copyWith(color: lightBlack),
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1!
+                              .copyWith(color: lightBlack),
                         ),
                         onPressed: () {
                           flag = 'low';
@@ -1473,12 +1506,14 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             ),
             child: new AlertDialog(
                 elevation: 2.0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0))),
                 contentPadding: const EdgeInsets.all(0.0),
                 content: SingleChildScrollView(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     Padding(
-                        padding: EdgeInsetsDirectional.only(top: 19.0, bottom: 16.0),
+                        padding:
+                            EdgeInsetsDirectional.only(top: 19.0, bottom: 16.0),
                         child: Text(
                           'Sort By',
                           style: Theme.of(context).textTheme.headline6,
@@ -1486,7 +1521,10 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                     Divider(color: lightBlack),
                     TextButton(
                         child: Text('Top Rated',
-                            style: Theme.of(context).textTheme.subtitle1!.copyWith(color: lightBlack)),
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle1!
+                                .copyWith(color: lightBlack)),
                         onPressed: () {
                           sortBy = '';
                           orderBy = 'DESC';
@@ -1504,7 +1542,10 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                     Divider(color: lightBlack),
                     TextButton(
                         child: Text('Newest First',
-                            style: Theme.of(context).textTheme.subtitle1!.copyWith(color: lightBlack)),
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle1!
+                                .copyWith(color: lightBlack)),
                         onPressed: () {
                           sortBy = 'p.date_added';
                           orderBy = 'DESC';
@@ -1523,7 +1564,10 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                     TextButton(
                         child: Text(
                           'Oldest First',
-                          style: Theme.of(context).textTheme.subtitle1!.copyWith(color: lightBlack),
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1!
+                              .copyWith(color: lightBlack),
                         ),
                         onPressed: () {
                           sortBy = 'p.date_added';
@@ -1543,7 +1587,10 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                     TextButton(
                         child: new Text(
                           'Price - Low to High',
-                          style: Theme.of(context).textTheme.subtitle1!.copyWith(color: lightBlack),
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1!
+                              .copyWith(color: lightBlack),
                         ),
                         onPressed: () {
                           sortBy = 'pv.price';
@@ -1565,7 +1612,10 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         child: TextButton(
                             child: new Text(
                               'Price - High to Low',
-                              style: Theme.of(context).textTheme.subtitle1!.copyWith(color: lightBlack),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle1!
+                                  .copyWith(color: lightBlack),
                             ),
                             onPressed: () {
                               sortBy = 'pv.price';
@@ -1588,7 +1638,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   }
 
   _scrollListener() {
-    if (controller.offset >= controller.position.maxScrollExtent && !controller.position.outOfRange) {
+    if (controller.offset >= controller.position.maxScrollExtent &&
+        !controller.position.outOfRange) {
       if (this.mounted) {
         if (mounted)
           setState(() {
@@ -1662,7 +1713,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           borderRadius: BorderRadius.circular(10.0),
         ),
         builder: (builder) {
-          return StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
             return Column(mainAxisSize: MainAxisSize.min, children: [
               Padding(
                   padding: const EdgeInsetsDirectional.only(top: 30.0),
@@ -1685,8 +1737,10 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                             borderRadius: BorderRadius.circular(4),
                             onTap: () => Navigator.of(context).pop(),
                             child: Padding(
-                              padding: const EdgeInsetsDirectional.only(end: 4.0),
-                              child: Icon(Icons.keyboard_arrow_left, color: primary),
+                              padding:
+                                  const EdgeInsetsDirectional.only(end: 4.0),
+                              child: Icon(Icons.keyboard_arrow_left,
+                                  color: primary),
                             ),
                           ),
                         ),
@@ -1701,7 +1755,9 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subtitle2!
-                                    .copyWith(fontWeight: FontWeight.normal, color: fontColor)),
+                                    .copyWith(
+                                        fontWeight: FontWeight.normal,
+                                        color: fontColor)),
                             onTap: () {
                               if (mounted)
                                 setState(() {
@@ -1714,7 +1770,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
               Expanded(
                   child: Container(
                       color: lightWhite,
-                      padding: EdgeInsetsDirectional.only(start: 7.0, end: 7.0, top: 7.0),
+                      padding: EdgeInsetsDirectional.only(
+                          start: 7.0, end: 7.0, top: 7.0),
                       child: Card(
                           child: Row(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1727,12 +1784,17 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                                     child: ListView.builder(
                                       shrinkWrap: true,
                                       scrollDirection: Axis.vertical,
-                                      padding: EdgeInsetsDirectional.only(top: 10.0),
+                                      padding:
+                                          EdgeInsetsDirectional.only(top: 10.0),
                                       itemCount: filterList.length,
                                       itemBuilder: (context, index) {
-                                        attsubList = filterList[index]['attribute_values'].split(',');
+                                        attsubList = filterList[index]
+                                                ['attribute_values']
+                                            .split(',');
 
-                                        attListId = filterList[index]['attribute_values_id'].split(',');
+                                        attListId = filterList[index]
+                                                ['attribute_values_id']
+                                            .split(',');
 
                                         if (filter == "") {
                                           filter = filterList[0]["name"];
@@ -1742,21 +1804,45 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                                             onTap: () {
                                               if (mounted)
                                                 setState(() {
-                                                  filter = filterList[index]['name'];
+                                                  filter =
+                                                      filterList[index]['name'];
                                                 });
                                             },
                                             child: Container(
-                                              padding: EdgeInsetsDirectional.only(start: 20, top: 10.0, bottom: 10.0),
+                                              padding:
+                                                  EdgeInsetsDirectional.only(
+                                                      start: 20,
+                                                      top: 10.0,
+                                                      bottom: 10.0),
                                               decoration: BoxDecoration(
-                                                  color: filter == filterList[index]['name'] ? white : lightWhite,
-                                                  borderRadius: BorderRadius.only(
-                                                      topLeft: Radius.circular(7), bottomLeft: Radius.circular(7))),
+                                                  color: filter ==
+                                                          filterList[index]
+                                                              ['name']
+                                                      ? white
+                                                      : lightWhite,
+                                                  borderRadius:
+                                                      BorderRadius.only(
+                                                          topLeft:
+                                                              Radius.circular(
+                                                                  7),
+                                                          bottomLeft:
+                                                              Radius.circular(
+                                                                  7))),
                                               alignment: Alignment.centerLeft,
                                               child: new Text(
                                                 filterList[index]['name'],
-                                                style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                                                    color: filter == filterList[index]['name'] ? fontColor : lightBlack,
-                                                    fontWeight: FontWeight.normal),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .subtitle1!
+                                                    .copyWith(
+                                                        color: filter ==
+                                                                filterList[
+                                                                        index]
+                                                                    ['name']
+                                                            ? fontColor
+                                                            : lightBlack,
+                                                        fontWeight:
+                                                            FontWeight.normal),
                                                 overflow: TextOverflow.ellipsis,
                                                 maxLines: 2,
                                               ),
@@ -1767,35 +1853,53 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                                 flex: 3,
                                 child: ListView.builder(
                                     shrinkWrap: true,
-                                    padding: EdgeInsetsDirectional.only(top: 10.0),
+                                    padding:
+                                        EdgeInsetsDirectional.only(top: 10.0),
                                     scrollDirection: Axis.vertical,
                                     itemCount: filterList.length,
                                     itemBuilder: (context, index) {
                                       if (filter == filterList[index]["name"]) {
-                                        attsubList = filterList[index]['attribute_values'].split(',');
+                                        attsubList = filterList[index]
+                                                ['attribute_values']
+                                            .split(',');
 
-                                        attListId = filterList[index]['attribute_values_id'].split(',');
+                                        attListId = filterList[index]
+                                                ['attribute_values_id']
+                                            .split(',');
                                         return Container(
                                             child: ListView.builder(
                                                 shrinkWrap: true,
-                                                physics: NeverScrollableScrollPhysics(),
+                                                physics:
+                                                    NeverScrollableScrollPhysics(),
                                                 itemCount: attListId!.length,
                                                 itemBuilder: (context, i) {
                                                   return CheckboxListTile(
                                                     dense: true,
                                                     title: Text(attsubList![i],
-                                                        style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                                                            color: lightBlack, fontWeight: FontWeight.normal)),
-                                                    value: selectedId.contains(attListId![i]),
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .subtitle1!
+                                                            .copyWith(
+                                                                color:
+                                                                    lightBlack,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal)),
+                                                    value: selectedId.contains(
+                                                        attListId![i]),
                                                     activeColor: primary,
-                                                    controlAffinity: ListTileControlAffinity.leading,
+                                                    controlAffinity:
+                                                        ListTileControlAffinity
+                                                            .leading,
                                                     onChanged: (bool? val) {
                                                       if (mounted)
                                                         setState(() {
                                                           if (val == true) {
-                                                            selectedId.add(attListId![i]);
+                                                            selectedId.add(
+                                                                attListId![i]);
                                                           } else {
-                                                            selectedId.remove(attListId![i]);
+                                                            selectedId.remove(
+                                                                attListId![i]);
                                                           }
                                                         });
                                                     },

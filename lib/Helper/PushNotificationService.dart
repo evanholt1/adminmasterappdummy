@@ -120,7 +120,7 @@ class PushNotificationService {
         } else {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => OrderList()),
+            MaterialPageRoute(builder: (context) => OrderListScreen()),
           );
         }
 
@@ -171,7 +171,7 @@ class PushNotificationService {
         } else {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => OrderList()),
+            MaterialPageRoute(builder: (context) => OrderListScreen()),
           );
         }
       }

@@ -21,4 +21,14 @@ class AddonOption with EquatableMixin {
       : id = json['_id'],
         name = LocalizedText.fromJson(json['name']),
         price = json['price'];
+
+  static List<AddonOption> copyList(List<AddonOption> addons) {
+    List<AddonOption> newList = [];
+    addons.forEach((element) => newList.add(new AddonOption(
+          id: element.id,
+          name: element.name,
+          price: element.price,
+        )));
+    return newList;
+  }
 }

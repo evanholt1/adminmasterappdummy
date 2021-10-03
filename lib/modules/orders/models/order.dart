@@ -1,20 +1,25 @@
 import 'package:admin_eshop/Models/driver.dart';
+import 'package:admin_eshop/common/blocs/locale/locale_cubit.dart';
 import 'package:admin_eshop/modules/orders/enums/order_status.dart';
+import 'package:admin_eshop/modules/orders/repositories/order_repo.dart';
+import 'package:admin_eshop/utils/services/RestApiService.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
 
-class Order {
+class Order extends ChangeNotifier with EquatableMixin {
   final bool reviewed;
   final List<OrderItem> items;
-  final Driver? driver;
+  Driver? driver;
   final String id;
   final String username;
   final String? userPhoneNumber;
   final num deliveryFee;
   final num? subTotal;
-  final double tax;
+  final num tax;
   final String paymentType;
   final String? promocode;
   final num? promocodeValue;
-  final double totalPrice;
+  final num totalPrice;
   final DeliveryAddress deliveryAddress;
   final int totalQuantity;
   final DateTime orderDate;
@@ -42,11 +47,25 @@ class Order {
     required this.status,
   });
 
-  static List<Order> listFromJson(List json) => json.map((e) => Order.fromJson(e)).toList();
+  void assignDriver(Driver driver) async {
+    await OrdersRepository.assignDriver(this.id, driver.id);
+    this.driver = driver;
+    notifyListeners();
+  }
+
+  void clearDriver() async {
+    await OrdersRepository.clearDriver(this.id);
+    this.driver = null;
+    notifyListeners();
+  }
+
+  static List<Order> listFromJson(List json) =>
+      json.map((e) => Order.fromJson(e)).toList();
 
   Order.fromJson(Map<String, dynamic> json)
       : reviewed = json['reviewed'],
-        driver = json['driver'] == null ? null : Driver.fromJson(json['driver']),
+        driver =
+            json['driver'] == null ? null : Driver.fromJson(json['driver']),
         items = OrderItem.listFromJson(json['items'] as List),
         username = json['user']['name'],
         userPhoneNumber = json['user.phone_number'],
@@ -62,6 +81,28 @@ class Order {
         orderDate = DateTime.parse(json['createdAt']),
         status = OrderStatus.values[json['status']],
         id = json['_id'];
+
+  Order.fromBilingualJson(Map<String, dynamic> json)
+      : reviewed = json['reviewed'],
+        driver =
+            json['driver'] == null ? null : Driver.fromJson(json['driver']),
+        items = OrderItem.listFromBilingualJson(json['items'] as List),
+        username = json['user']['name'],
+        userPhoneNumber = json['user.phone_number'],
+        deliveryFee = json['deliveryFee'],
+        tax = json['tax'],
+        subTotal = json['subTotal'],
+        paymentType = json['paymentType'],
+        promocode = json['promocode'],
+        promocodeValue = json['promocodeValue'],
+        totalPrice = json['totalPrice'],
+        deliveryAddress = DeliveryAddress.fromJson(json['deliveryAddress']),
+        totalQuantity = json['totalQuantity'],
+        orderDate = DateTime.parse(json['createdAt']),
+        status = OrderStatus.values[json['status']],
+        id = json['_id'];
+  @override
+  List<Object?> get props => [id];
 }
 
 class OrderItem {
@@ -83,9 +124,26 @@ class OrderItem {
         quantity = json['quantity'],
         totalItemPrice = json['totalItemPrice'],
         name = (json['name'] as Map).values.first,
-        selectedAddonCats = SelectedAddonCat.listFromJson(json['selectedAddonCats']);
+        selectedAddonCats = json['selectedAddonCats'] == null
+            ? []
+            : SelectedAddonCat.listFromJson(json['selectedAddonCats']);
 
-  static listFromJson(List json) => json.map((e) => OrderItem.fromJson(e)).toList();
+  OrderItem.fromBilingualJson(Map<String, dynamic> json)
+      : id = json['item'],
+        quantity = json['quantity'],
+        totalItemPrice = json['totalItemPrice'],
+        name = (LocaleCubit().state as LocaleSetSuccess).isEnglish
+            ? json['name']['en']
+            : json['name']['ar'],
+        selectedAddonCats = json['selectedAddonCats'] == null
+            ? []
+            : SelectedAddonCat.listFromJson(json['selectedAddonCats']);
+
+  static listFromJson(List json) =>
+      json.map((e) => OrderItem.fromJson(e)).toList();
+
+  static listFromBilingualJson(List json) =>
+      json.map((e) => OrderItem.fromBilingualJson(e)).toList();
 }
 
 class SelectedAddonCat {
@@ -93,14 +151,17 @@ class SelectedAddonCat {
   final String name;
   final List<SelectedOption> selectedOptions;
 
-  SelectedAddonCat({required this.id, required this.selectedOptions, required this.name});
+  SelectedAddonCat(
+      {required this.id, required this.selectedOptions, required this.name});
 
   SelectedAddonCat.fromJson(Map<String, dynamic> json)
       : this.id = json['_id'],
         this.name = (json['name'] as Map).values.first,
-        this.selectedOptions = SelectedOption.listFromJson(json['selectedOptions']);
+        this.selectedOptions =
+            SelectedOption.listFromJson(json['selectedOptions']);
 
-  static listFromJson(List json) => json.map((e) => SelectedAddonCat.fromJson(e)).toList();
+  static listFromJson(List json) =>
+      json.map((e) => SelectedAddonCat.fromJson(e)).toList();
 }
 
 class SelectedOption {
@@ -115,7 +176,8 @@ class SelectedOption {
         this.price = json['price'],
         this.name = (json['name'] as Map).values.first;
 
-  static listFromJson(List json) => json.map((e) => SelectedOption.fromJson(e)).toList();
+  static listFromJson(List json) =>
+      json.map((e) => SelectedOption.fromJson(e)).toList();
 }
 
 // class Location {

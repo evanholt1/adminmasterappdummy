@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:admin_eshop/Helper/confirmation_dialog.dart';
+import 'package:admin_eshop/common/providers/socket_provider.dart';
 import 'package:admin_eshop/modules/orders/providers/order_list_provider.dart';
+import 'package:admin_eshop/modules/orders/providers/selected_order_tab_provider.dart';
 import 'package:admin_eshop/modules/orders/screens/order_list/widgets/order_item.dart';
+import 'package:admin_eshop/modules/orders/screens/order_list/widgets/orders_list_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
@@ -14,13 +18,16 @@ import '../../../../Helper/Session.dart';
 import '../../../../Helper/String.dart';
 import '../../../../Models/Order_Model.dart';
 import '../../../../config/themes/base_theme_colors.dart';
+import 'package:sizer/sizer.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class OrderList extends StatefulWidget {
+class OrderListScreen extends StatefulWidget {
   @override
-  _OrderListState createState() => _OrderListState();
+  _OrderListScreenState createState() => _OrderListScreenState();
 }
 
-class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
+class _OrderListScreenState extends State<OrderListScreen>
+    with TickerProviderStateMixin {
   bool _isNetworkAvail = true;
   Animation? buttonSqueezeanimation;
   AnimationController? buttonController;
@@ -41,20 +48,39 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
   String? start, end;
-  String? all, received, processed, shipped, delivered, cancelled, returned, awaiting;
-  List<String> statusList = [ALL, PLACED, PROCESSED, SHIPPED, DELIVERED, CANCELLED, RETURNED, awaitingPayment];
+  String? all,
+      received,
+      processed,
+      shipped,
+      delivered,
+      cancelled,
+      returned,
+      awaiting;
+  List<String> statusList = [
+    ALL,
+    PLACED,
+    PROCESSED,
+    SHIPPED,
+    DELIVERED,
+    CANCELLED,
+    RETURNED,
+    awaitingPayment
+  ];
 
   @override
   void initState() {
+    context.read<OrderListProvider>().getOrderList();
+
     appBarTitle = Text(
       ORDER,
       style: TextStyle(color: primary),
     );
     scrollOffset = 0;
-    Future.delayed(Duration.zero, this.getOrder);
+    //Future.delayed(Duration.zero, this.getOrder);
     // getOrder();
 
-    buttonController = new AnimationController(duration: new Duration(milliseconds: 2000), vsync: this);
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
     scrollController = ScrollController(keepScrollOffset: true);
     scrollController!.addListener(_transactionscrollListener);
 
@@ -82,19 +108,25 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
           });
       }
 
-      if (_lastsearch != _searchText && (_searchText == '' || (_searchText.length > 2))) {
+      if (_lastsearch != _searchText &&
+          (_searchText == '' || (_searchText.length > 2))) {
         _lastsearch = _searchText;
         scrollLoadmore = true;
         scrollOffset = 0;
-        getOrder();
+        //getOrder();
       }
     });
 
     super.initState();
+
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      Provider.of<SocketProvider>(context, listen: false).connect();
+    });
   }
 
   _transactionscrollListener() {
-    if (scrollController!.offset >= scrollController!.position.maxScrollExtent &&
+    if (scrollController!.offset >=
+            scrollController!.position.maxScrollExtent &&
         !scrollController!.position.outOfRange) {
       if (mounted)
         setState(() {
@@ -106,14 +138,20 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<OrderListProvider>(
-      create: (_) => OrderListProvider(),
-      child: Selector<OrderListProvider, bool>(
-        selector: (_, prov) => prov.loading,
-        builder: (context, ordersListLoadInProgress, __) => Scaffold(
-          backgroundColor: lightWhite,
-          appBar: getAppbar(),
-          body: _isNetworkAvail ? (ordersListLoadInProgress ? shimmer() : _showContent(context)) : noInternet(context),
+    return Consumer<SelectedOrderTabProvider>(
+      builder: (_, __, ___) => Consumer<OrderListProvider>(
+        builder: (context, ordersListP, __) => Consumer<SocketProvider>(
+          builder: (_, socketP, ___) {
+            return Scaffold(
+              backgroundColor: lightWhite,
+              appBar: getAppbar(),
+              body: _isNetworkAvail
+                  ? (ordersListP.loading || socketP.loading
+                      ? shimmer()
+                      : _showContent(context))
+                  : noInternet(context),
+            );
+          },
         ),
       ),
     );
@@ -128,7 +166,10 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
 
   Future<void> _startDate(BuildContext context) async {
     final DateTime picked = (await showDatePicker(
-        context: context, initialDate: startDate, firstDate: DateTime(2020, 1), lastDate: DateTime.now()))!;
+        context: context,
+        initialDate: startDate,
+        firstDate: DateTime(2020, 1),
+        lastDate: DateTime.now()))!;
     if (picked != null)
       setState(() {
         startDate = picked;
@@ -144,7 +185,10 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
 
   Future<void> _endDate(BuildContext context) async {
     final DateTime picked = (await showDatePicker(
-        context: context, initialDate: startDate, firstDate: startDate, lastDate: DateTime.now()))!;
+        context: context,
+        initialDate: startDate,
+        firstDate: startDate,
+        lastDate: DateTime.now()))!;
     if (picked != null)
       setState(() {
         endDate = picked;
@@ -191,7 +235,9 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
                 _isNetworkAvail = await isNetworkAvailable();
                 if (_isNetworkAvail) {
                   Navigator.pushReplacement(
-                      context, MaterialPageRoute(builder: (BuildContext context) => super.widget));
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController!.reverse();
                   if (mounted) setState(() {});
@@ -227,49 +273,64 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
           ),
         );
       }),
-      // actions: <Widget>[
-      //   InkWell(
-      //     child: Padding(
-      //       padding: const EdgeInsets.all(8.0),
-      //       child: iconSearch,
-      //     ),
-      //     onTap: () {
-      //       if (!mounted) return;
-      //       setState(() {
-      //         if (iconSearch.icon == Icons.search) {
-      //           iconSearch = Icon(
-      //             Icons.close,
-      //             color: primary,
-      //           );
-      //           appBarTitle = TextField(
-      //             controller: _controller,
-      //             autofocus: true,
-      //             style: TextStyle(
-      //               color: primary,
-      //             ),
-      //             decoration: InputDecoration(
-      //               prefixIcon: Icon(Icons.search, color: primary),
-      //               hintText: 'Search...',
-      //               hintStyle: TextStyle(color: primary),
-      //             ),
-      //             //  onChanged: searchOperation,
-      //           );
-      //           _handleSearchStart();
-      //         } else {
-      //           _handleSearchEnd();
-      //         }
-      //       });
-      //     },
-      //   ),
-      //   InkWell(
-      //       onTap: filterDialog,
-      //       child: Padding(
-      //           padding: const EdgeInsets.all(8.0),
-      //           child: Icon(
-      //             Icons.filter_alt_outlined,
-      //             color: primary,
-      //           )))
-      // ],
+      actions: <Widget>[
+        IconButton(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (_) => ChangeNotifierProvider<OrderListProvider>.value(
+                value: context.read<OrderListProvider>(),
+                child: OrdersListScreenDialog(),
+              ),
+            );
+          },
+          icon: Icon(
+            Icons.settings,
+            color: AppColors.black,
+          ),
+        ),
+        // InkWell(
+        //   child: Padding(
+        //     padding: const EdgeInsets.all(8.0),
+        //     child: iconSearch,
+        //   ),
+        //   onTap: () {
+        //     if (!mounted) return;
+        //     setState(() {
+        //       if (iconSearch.icon == Icons.search) {
+        //         iconSearch = Icon(
+        //           Icons.close,
+        //           color: primary,
+        //         );
+        //         appBarTitle = TextField(
+        //           controller: _controller,
+        //           autofocus: true,
+        //           style: TextStyle(
+        //             color: primary,
+        //           ),
+        //           decoration: InputDecoration(
+        //             prefixIcon: Icon(Icons.search, color: primary),
+        //             hintText: 'Search...',
+        //             hintStyle: TextStyle(color: primary),
+        //           ),
+        //           //  onChanged: searchOperation,
+        //         );
+        //         _handleSearchStart();
+        //       } else {
+        //         _handleSearchEnd();
+        //       }
+        //     });
+        //   },
+        // ),
+        // InkWell(
+        //     onTap: filterDialog,
+        //     child: Padding(
+        //         padding: const EdgeInsets.all(8.0),
+        //         child: Icon(
+        //           Icons.filter_alt_outlined,
+        //           color: primary,
+        //         )))
+      ],
     );
   }
 
@@ -287,29 +348,55 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
                     controller: scrollController,
                     child: Column(
                       children: <Widget>[
-                        // _detailHeader(),
-                        // _detailHeader2(),
+                        _detailHeader(context),
+                        _detailHeader2(context),
                         //_filterRow(),
-                        ListView.builder(
-                            shrinkWrap: true,
-                            padding: EdgeInsetsDirectional.only(bottom: 5, start: 10, end: 10),
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: context.watch<OrderListProvider>().orderList.length,
-                            itemBuilder: (context, index) {
-                              final order = context.watch<OrderListProvider>().orderList[index];
-                              return OrderListScreenOrder(order: order);
-                              // Order_Model? item;
-                              // try {
-                              //   item = (orderList.isEmpty ? null : orderList[index])!;
-                              //   if (scrollLoadmore &&
-                              //       index == (orderList.length - 1) &&
-                              //       scrollController!.position.pixels <= 0) {
-                              //     getOrder();
-                              //   }
-                              // } on Exception catch (_) {}
+                        if (context
+                                .watch<OrderListProvider>()
+                                .orderList
+                                .length !=
+                            0)
+                          ListView.builder(
+                              shrinkWrap: true,
+                              padding: EdgeInsetsDirectional.only(
+                                  bottom: 5, start: 10, end: 10),
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: context
+                                  .watch<OrderListProvider>()
+                                  .orderList
+                                  .length,
+                              itemBuilder: (context, index) {
+                                final order = context
+                                    .watch<OrderListProvider>()
+                                    .orderList[index];
+                                return OrderListScreenOrder(order: order);
+                                // Order_Model? item;
+                                // try {
+                                //   item = (orderList.isEmpty ? null : orderList[index])!;
+                                //   if (scrollLoadmore &&
+                                //       index == (orderList.length - 1) &&
+                                //       scrollController!.position.pixels <= 0) {
+                                //     getOrder();
+                                //   }
+                                // } on Exception catch (_) {}
 
-                              //return this.orderItem(index);
-                            }),
+                                //return this.orderItem(index);
+                              }),
+                        if (context
+                                .watch<OrderListProvider>()
+                                .orderList
+                                .length ==
+                            0)
+                          Center(
+                            child: Container(
+                              height: 20.0.h,
+                              alignment: Alignment.center,
+                              child: Text(
+                                AppLocalizations.of(context)!.orders_empty,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          )
                       ],
                     ),
                   ),
@@ -325,77 +412,90 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
           );
   }
 
-  _detailHeader() {
+  _detailHeader(BuildContext context) {
+    final selectedTab = context.watch<SelectedOrderTabProvider>().selectedTab;
     return Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: Row(
         children: [
           Expanded(
             flex: 1,
-            child: Card(
+            child: Opacity(
+              opacity: selectedTab == 0 ? 1.0 : 0.6,
+              child: Card(
                 elevation: 0,
                 child: InkWell(
                   onTap: () {
-                    setState(() {
-                      activeStatus = null;
-                      scrollLoadmore = true;
-                      scrollOffset = 0;
-                    });
-
-                    getOrder();
+                    context.read<OrderListProvider>().getOrderList(0);
+                    context.read<SelectedOrderTabProvider>().selectedTab = 0;
+                    // setState(() {
+                    //   activeStatus = statusList[1];
+                    //   scrollLoadmore = true;
+                    //   scrollOffset = 0;
+                    // });
                   },
                   child: Padding(
-                    padding: const EdgeInsets.all(18.0),
+                    padding: const EdgeInsets.all(10.0),
                     child: Column(
                       children: [
                         Icon(
-                          Icons.shopping_cart,
+                          Icons.archive,
                           color: fontColor,
                         ),
                         Text(
-                          ORDER,
-                          style: Theme.of(context).textTheme.caption!.copyWith(fontWeight: FontWeight.bold),
+                          AppLocalizations.of(context)!.pending_orders,
+                          style: Theme.of(context)
+                              .textTheme
+                              .caption!
+                              .copyWith(fontWeight: FontWeight.bold),
                           maxLines: 1,
                         ),
                         Text(
-                          all ?? "",
-                          style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
+                          received ?? '',
+                          style: TextStyle(
+                              color: fontColor, fontWeight: FontWeight.bold),
                         )
                       ],
                     ),
                   ),
-                )),
+                ),
+              ),
+            ),
           ),
           Expanded(
             flex: 1,
-            child: Card(
-              elevation: 0,
-              child: InkWell(
-                onTap: () {
-                  setState(() {
-                    activeStatus = statusList[1];
-                    scrollLoadmore = true;
-                    scrollOffset = 0;
-                  });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(18.0),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.archive,
-                        color: fontColor,
-                      ),
-                      Text(
-                        RECEIVED_LBL,
-                        style: Theme.of(context).textTheme.caption!.copyWith(fontWeight: FontWeight.bold),
-                        maxLines: 1,
-                      ),
-                      Text(
-                        received ?? '',
-                        style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
-                      )
-                    ],
+            child: Opacity(
+              opacity: selectedTab == 1 ? 1.0 : 0.6,
+              child: Card(
+                elevation: 0,
+                child: InkWell(
+                  onTap: () {
+                    context.read<OrderListProvider>().getOrderList(1);
+                    context.read<SelectedOrderTabProvider>().selectedTab = 1;
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.work,
+                          color: fontColor,
+                        ),
+                        Text(
+                          AppLocalizations.of(context)!.preparing_orders,
+                          style: Theme.of(context)
+                              .textTheme
+                              .caption!
+                              .copyWith(fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                        ),
+                        Text(
+                          processed ?? "",
+                          style: TextStyle(
+                              color: fontColor, fontWeight: FontWeight.bold),
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -403,71 +503,38 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
           ),
           Expanded(
             flex: 1,
-            child: Card(
-              elevation: 0,
-              child: InkWell(
-                onTap: () {
-                  setState(() {
-                    activeStatus = statusList[2];
-                    scrollLoadmore = true;
-                    scrollOffset = 0;
-                  });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(18.0),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.work,
-                        color: fontColor,
-                      ),
-                      Text(
-                        PROCESSED_LBL,
-                        style: Theme.of(context).textTheme.caption!.copyWith(fontWeight: FontWeight.bold),
-                        maxLines: 1,
-                      ),
-                      Text(
-                        processed ?? "",
-                        style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Card(
-              elevation: 0,
-              child: InkWell(
-                onTap: () {
-                  setState(() {
-                    activeStatus = statusList[3];
-                    scrollLoadmore = true;
-                    scrollOffset = 0;
-                  });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(18.0),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.airport_shuttle,
-                        color: fontColor,
-                      ),
-                      Text(
-                        SHIPED_LBL,
-                        style: Theme.of(context).textTheme.caption!.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                        maxLines: 1,
-                      ),
-                      Text(
-                        shipped ?? "",
-                        style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
-                      )
-                    ],
+            child: Opacity(
+              opacity: selectedTab == 2 ? 1.0 : 0.6,
+              child: Card(
+                elevation: 0,
+                child: InkWell(
+                  onTap: () {
+                    context.read<OrderListProvider>().getOrderList(2);
+                    context.read<SelectedOrderTabProvider>().selectedTab = 2;
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.history,
+                          color: fontColor,
+                        ),
+                        Text(
+                          AppLocalizations.of(context)!.prepared_orders,
+                          style: Theme.of(context)
+                              .textTheme
+                              .caption!
+                              .copyWith(fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                        ),
+                        Text(
+                          awaiting ?? '',
+                          style: TextStyle(
+                              color: fontColor, fontWeight: FontWeight.bold),
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -478,150 +545,163 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
     );
   }
 
-  _detailHeader2() {
+  _detailHeader2(BuildContext context) {
+    final selectedTab = context.watch<SelectedOrderTabProvider>().selectedTab;
     return Row(
       children: [
         Expanded(
           flex: 1,
-          child: Card(
+          child: Opacity(
+            opacity: selectedTab == 3 ? 1.0 : 0.6,
+            child: Card(
               elevation: 0,
               child: InkWell(
                 onTap: () {
-                  setState(() {
-                    activeStatus = statusList[4];
-                    scrollLoadmore = true;
-                    scrollOffset = 0;
-                  });
+                  context.read<OrderListProvider>().getOrderList(3);
+                  context.read<SelectedOrderTabProvider>().selectedTab = 3;
                 },
                 child: Padding(
-                  padding: const EdgeInsets.all(18.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: Column(
                     children: [
                       Icon(
-                        Icons.assignment_turned_in,
+                        Icons.airport_shuttle,
                         color: fontColor,
                       ),
                       Text(
-                        DELIVERED_LBL,
-                        style: Theme.of(context).textTheme.caption!.copyWith(fontWeight: FontWeight.bold),
+                        AppLocalizations.of(context)!.delivering_orders,
+                        style: Theme.of(context).textTheme.caption!.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                         maxLines: 1,
                       ),
                       Text(
-                        delivered ?? "",
-                        style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
+                        shipped ?? "",
+                        style: TextStyle(
+                            color: fontColor, fontWeight: FontWeight.bold),
                       )
                     ],
                   ),
                 ),
-              )),
-        ),
-        Expanded(
-          flex: 1,
-          child: Card(
-            elevation: 0,
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  activeStatus = statusList[7];
-                  scrollLoadmore = true;
-                  scrollOffset = 0;
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(18.0),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.history,
-                      color: fontColor,
-                    ),
-                    Text(
-                      AWAITING_LBL,
-                      style: Theme.of(context).textTheme.caption!.copyWith(fontWeight: FontWeight.bold),
-                      maxLines: 1,
-                    ),
-                    Text(
-                      awaiting ?? '',
-                      style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
-                    )
-                  ],
-                ),
               ),
             ),
           ),
         ),
         Expanded(
           flex: 1,
-          child: Card(
-            elevation: 0,
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  activeStatus = statusList[5];
-                  scrollLoadmore = true;
-                  scrollOffset = 0;
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(18.0),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.cancel,
-                      color: fontColor,
+          child: Opacity(
+            opacity: selectedTab == 4 ? 1.0 : 0.6,
+            child: Card(
+                elevation: 0,
+                child: InkWell(
+                  onTap: () {
+                    context.read<OrderListProvider>().getOrderList(4);
+                    context.read<SelectedOrderTabProvider>().selectedTab = 4;
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.assignment_turned_in,
+                          color: fontColor,
+                        ),
+                        Text(
+                          AppLocalizations.of(context)!.delivered_orders,
+                          style: Theme.of(context)
+                              .textTheme
+                              .caption!
+                              .copyWith(fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                        ),
+                        Text(
+                          delivered ?? "",
+                          style: TextStyle(
+                              color: fontColor, fontWeight: FontWeight.bold),
+                        )
+                      ],
                     ),
-                    Text(
-                      CANCELLED_LBL,
-                      style: Theme.of(context).textTheme.caption!.copyWith(fontWeight: FontWeight.bold),
-                      maxLines: 1,
-                    ),
-                    Text(
-                      cancelled ?? "",
-                      style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
-                    )
-                  ],
-                ),
-              ),
-            ),
+                  ),
+                )),
           ),
         ),
+
         Expanded(
           flex: 1,
-          child: Card(
-            elevation: 0,
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  activeStatus = statusList[6];
-                  scrollLoadmore = true;
-                  scrollOffset = 0;
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(18.0),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.upload,
-                      color: fontColor,
-                    ),
-                    Text(
-                      RETURNED_LBL,
-                      style: Theme.of(context).textTheme.caption!.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                      maxLines: 1,
-                    ),
-                    Text(
-                      returned ?? "",
-                      style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
-                    )
-                  ],
+          child: Opacity(
+            opacity: selectedTab == 5 ? 1.0 : 0.6,
+            child: Card(
+              elevation: 0,
+              child: InkWell(
+                onTap: () {
+                  context.read<OrderListProvider>().getOrderList(5);
+                  context.read<SelectedOrderTabProvider>().selectedTab = 5;
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.cancel,
+                        color: fontColor,
+                      ),
+                      Text(
+                        AppLocalizations.of(context)!.cancelled_orders,
+                        style: Theme.of(context)
+                            .textTheme
+                            .caption!
+                            .copyWith(fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                      ),
+                      Text(
+                        cancelled ?? "",
+                        style: TextStyle(
+                            color: fontColor, fontWeight: FontWeight.bold),
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
+        // Expanded(
+        //   flex: 1,
+        //   child: Card(
+        //     elevation: 0,
+        //     child: InkWell(
+        //       onTap: () {
+        //         setState(() {
+        //           activeStatus = statusList[6];
+        //           scrollLoadmore = true;
+        //           scrollOffset = 0;
+        //         });
+        //       },
+        //       child: Padding(
+        //         padding: const EdgeInsets.all(0.0),
+        //         child: Column(
+        //           children: [
+        //             Icon(
+        //               Icons.upload,
+        //               color: fontColor,
+        //             ),
+        //             Text(
+        //               RETURNED_LBL,
+        //               style: Theme.of(context).textTheme.caption!.copyWith(
+        //                     fontWeight: FontWeight.bold,
+        //                   ),
+        //               maxLines: 1,
+        //             ),
+        //             Text(
+        //               returned ?? "",
+        //               style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
+        //             )
+        //           ],
+        //         ),
+        //       ),
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }
@@ -634,7 +714,8 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
       back = Colors.green;
     else if ((model.activeStatus) == SHIPPED)
       back = Colors.orange;
-    else if ((model.activeStatus) == CANCELLED || model.activeStatus == RETURNED)
+    else if ((model.activeStatus) == CANCELLED ||
+        model.activeStatus == RETURNED)
       back = Colors.red;
     else if ((model.activeStatus) == PROCESSED)
       back = Colors.indigo;
@@ -652,7 +733,9 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(4),
         child: Padding(
             padding: EdgeInsets.all(8.0),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
+                    Widget>[
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Row(
@@ -662,9 +745,12 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
                     Spacer(),
                     Container(
                       margin: EdgeInsets.only(left: 8),
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                      decoration:
-                          BoxDecoration(color: back, borderRadius: new BorderRadius.all(const Radius.circular(4.0))),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                      decoration: BoxDecoration(
+                          color: back,
+                          borderRadius:
+                              new BorderRadius.all(const Radius.circular(4.0))),
                       child: Text(
                         capitalize(model.activeStatus!),
                         style: TextStyle(color: white),
@@ -675,7 +761,8 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
               ),
               Divider(),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
                 child: Row(
                   children: [
                     Flexible(
@@ -684,7 +771,9 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
                           Icon(Icons.person, size: 14),
                           Expanded(
                             child: Text(
-                              model.name != null && model.name!.length > 0 ? " " + capitalize(model.name!) : " ",
+                              model.name != null && model.name!.length > 0
+                                  ? " " + capitalize(model.name!)
+                                  : " ",
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -702,7 +791,9 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
                           ),
                           Text(
                             " " + model.mobile!,
-                            style: TextStyle(color: fontColor, decoration: TextDecoration.underline),
+                            style: TextStyle(
+                                color: fontColor,
+                                decoration: TextDecoration.underline),
                           ),
                         ],
                       ),
@@ -714,13 +805,15 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
                 child: Row(
                   children: [
                     Row(
                       children: [
                         Icon(Icons.money, size: 14),
-                        Text(" Payable: " + CUR_CURRENCY + " " + model.payable!),
+                        Text(
+                            " Payable: " + CUR_CURRENCY + " " + model.payable!),
                       ],
                     ),
                     Spacer(),
@@ -734,7 +827,8 @@ class _OrderListState extends State<OrderList> with TickerProviderStateMixin {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
                 child: Row(
                   children: [
                     Icon(Icons.date_range, size: 14),
@@ -790,15 +884,18 @@ orderList.clear();*/
               OFFSET: scrollOffset.toString(),
               SEARCH: _searchText.trim(),
             };
-            if (start != null) parameter[START_DATE] = "${startDate.toLocal()}".split(' ')[0];
-            if (end != null) parameter[END_DATE] = "${endDate.toLocal()}".split(' ')[0];
+            if (start != null)
+              parameter[START_DATE] = "${startDate.toLocal()}".split(' ')[0];
+            if (end != null)
+              parameter[END_DATE] = "${endDate.toLocal()}".split(' ')[0];
             if (activeStatus != null) {
               if (activeStatus == awaitingPayment) activeStatus = "awaiting";
               parameter[ACTIVE_STATUS] = activeStatus!;
             }
 
             Response response =
-                await post(getOrdersApi, body: parameter, headers: headers).timeout(Duration(seconds: timeOut));
+                await post(getOrdersApi, body: parameter, headers: headers)
+                    .timeout(Duration(seconds: timeOut));
 
             var getdata = json.decode(response.body);
             bool error = getdata["error"];
@@ -819,7 +916,9 @@ orderList.clear();*/
               tempList.clear();
               var data = getdata["data"];
               if (data.length != 0) {
-                tempList = (data as List).map((data) => new Order_Model.fromJson(data)).toList();
+                tempList = (data as List)
+                    .map((data) => new Order_Model.fromJson(data))
+                    .toList();
 
                 orderList.addAll(tempList);
                 scrollLoadmore = true;
@@ -865,20 +964,27 @@ orderList.clear();*/
             ),
             child: new AlertDialog(
                 elevation: 2.0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0))),
                 contentPadding: const EdgeInsets.all(0.0),
                 content: SingleChildScrollView(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     Padding(
-                        padding: EdgeInsetsDirectional.only(top: 19.0, bottom: 16.0),
+                        padding:
+                            EdgeInsetsDirectional.only(top: 19.0, bottom: 16.0),
                         child: Text(
                           'Filter By',
-                          style: Theme.of(context).textTheme.headline6!.copyWith(color: fontColor),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headline6!
+                              .copyWith(color: fontColor),
                         )),
                     Divider(color: lightBlack),
                     Flexible(
                       child: SingleChildScrollView(
-                        child: Column(mainAxisAlignment: MainAxisAlignment.start, children: getStatusList()),
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: getStatusList()),
                       ),
                     ),
                   ]),
@@ -899,7 +1005,10 @@ orderList.clear();*/
                   width: double.maxFinite,
                   child: TextButton(
                       child: Text(capitalize(statusList[index]),
-                          style: Theme.of(context).textTheme.subtitle1!.copyWith(color: lightBlack)),
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1!
+                              .copyWith(color: lightBlack)),
                       onPressed: () {
                         setState(() {
                           activeStatus = index == 0 ? null : statusList[index];

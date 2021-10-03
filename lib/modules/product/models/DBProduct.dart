@@ -73,7 +73,8 @@ class DBProduct extends Equatable {
         this.price = json['price'],
         this.discountValue = json['discountValue'],
         this.imageUrl = json['image_url'],
-        this.addonsByCat = AddonCategory.addonCategoriesFromJson(json['addonsByCat'] as List),
+        this.addonsByCat =
+            AddonCategory.addonCategoriesFromJson(json['addonsByCat'] as List),
         this.salesCount = json['salesCount'],
         this.isRecommended = json['isRecommended'],
         this.itemPhotos = (json['item_photos'] as List).cast<String>(),
@@ -83,5 +84,26 @@ class DBProduct extends Equatable {
     print(json);
   }
 
-  static List<DBProduct> productsFromJson(List json) => json.map((e) => DBProduct.fromJson(e)).toList();
+  static List<DBProduct> productsFromJson(List json) =>
+      json.map((e) => DBProduct.fromJson(e)).toList();
+
+  static DBProduct copy(DBProduct product) {
+    return DBProduct(
+        id: product.id,
+        name: LocalizedText.copy(product.name),
+        description: LocalizedText.copy(product.description),
+        category: product.category,
+        subcategory: product.subcategory,
+        brand: product.brand,
+        price: product.price,
+        discountValue: product.discountValue,
+        imageUrl: product.imageUrl,
+        addonsByCat: AddonCategory.copyList(product.addonsByCat),
+        salesCount: product.salesCount,
+        isRecommended: product.isRecommended,
+        itemPhotos: List.of(product.itemPhotos),
+        rating: product.rating,
+        ratingCount: product.ratingCount,
+        isActive: product.isActive);
+  }
 }

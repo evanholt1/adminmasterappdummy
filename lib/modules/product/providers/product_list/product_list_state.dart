@@ -15,7 +15,7 @@ class ProductListLoadInProgress extends ProductListState {
 }
 
 class ProductListGetSuccess extends ProductListState {
-  final List<Category> categories;
+  final List<ProductCategory> categories;
 
   ProductListGetSuccess(this.categories);
 

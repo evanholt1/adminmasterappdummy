@@ -106,6 +106,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.3"
+  custom_searchable_dropdown:
+    dependency: "direct main"
+    description:
+      name: custom_searchable_dropdown
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.6"
   downloads_path_provider_28:
     dependency: "direct main"
     description:
@@ -237,6 +244,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.6.1"
+  flutter_form_builder:
+    dependency: "direct main"
+    description:
+      name: flutter_form_builder
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "6.0.1"
   flutter_local_notifications:
     dependency: "direct main"
     description:
@@ -251,6 +265,11 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.1"
+  flutter_localizations:
+    dependency: "direct main"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:

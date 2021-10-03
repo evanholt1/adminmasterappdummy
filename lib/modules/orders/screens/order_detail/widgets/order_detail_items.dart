@@ -75,7 +75,7 @@ class OrderDetailScreenOrderItems extends StatelessWidget {
                               Text(
                                 CUR_CURRENCY +
                                     " " +
-                                    orderItem.totalItemPrice.toString(),
+                                    orderItem.totalItemPrice.toStringAsFixed(2),
                                 style: Theme.of(context)
                                     .textTheme
                                     .subtitle1!

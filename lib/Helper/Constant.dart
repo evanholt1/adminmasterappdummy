@@ -80,12 +80,12 @@ const String SOLD_LBL = 'Sold out';
 const String Del_LBL = 'Delivery Boy';
 const String TICKET_LBL = 'Ticket';
 
-const String RECEIVED_LBL = 'Received';
+const String RECEIVED_LBL = 'Pending';
 
-const String PROCESSED_LBL = 'Processed';
+const String PROCESSED_LBL = 'Preparing';
 const String SHIPED_LBL = 'Shipped';
 const String DELIVERED_LBL = 'Delivered';
-const String AWAITING_LBL = 'Awaiting';
+const String AWAITING_LBL = 'Prepared';
 const String CANCELLED_LBL = 'Cancelled';
 const String RETURNED_LBL = 'Returned';
 
@@ -94,9 +94,13 @@ const String WITHDRAW_MONEY = 'Withdraw Balance';
 const String SEND_REQUEST = 'Send Withrawal Request';
 const String OTP_ENTER = 'Enter OTP';
 const String WITHDRWAL_AMT = 'Withdrwal Amount';
-const String BANK_DETAIL = 'Bank Details:\n' + 'Account No :123XXXXX\n' + 'IFSC Code: 123XXX \n' + 'Name: Abc xyz';
+const String BANK_DETAIL = 'Bank Details:\n' +
+    'Account No :123XXXXX\n' +
+    'IFSC Code: 123XXX \n' +
+    'Name: Abc xyz';
 const String FIELD_REQUIRED = 'This Field is Required';
-const String SEND_VERIFY_CODE_LBL = "We will send a Verification Code to This Number";
+const String SEND_VERIFY_CODE_LBL =
+    "We will send a Verification Code to This Number";
 const String SENT_VERIFY_CODE_TO_NO_LBL = "We have sent a verification code to";
 const String COUNTRY_CODE_LBL = "Select country code";
 const String PASS_SUCCESS_MSG = "Password Update Successfully! Please Login";
@@ -124,10 +128,12 @@ const String USER_LENGTH = 'Username should be 2 character long';
 const String MOB_REQUIRED = 'Mobile number required';
 const String VALID_MOB = 'Please enter valid mobile number';
 const String NO_INTERNET = "No Internet";
-const String NO_INTERNET_DISC = "Please check your connection again, or connect to Wi-Fi";
+const String NO_INTERNET_DISC =
+    "Please check your connection again, or connect to Wi-Fi";
 const String noItem = 'No Item Found..!!';
 const String TRY_AGAIN_INT_LBL = "Try Again";
-final String somethingMSg = 'Something went wrong. Please try again after some time';
+final String somethingMSg =
+    'Something went wrong. Please try again after some time';
 const String noNoti = 'No Notification Found..!!';
 
 final String jwtKey = "68f05dec6014f68e760c5c5fa3e31bcf391a2e10";

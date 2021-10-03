@@ -7,14 +7,18 @@ import 'package:admin_eshop/Helper/Session.dart';
 import 'package:admin_eshop/Helper/String.dart';
 import 'package:admin_eshop/Models/Person_Model.dart';
 import 'package:admin_eshop/config/themes/base_theme_colors.dart';
+import 'package:admin_eshop/modules/orders/enums/order_status.dart';
 import 'package:admin_eshop/modules/orders/models/order.dart';
+import 'package:admin_eshop/modules/orders/providers/driver_list_provider.dart';
 import 'package:admin_eshop/modules/orders/screens/order_detail/widgets/order_detail_items.dart';
+import 'package:admin_eshop/modules/orders/screens/order_detail/widgets/order_detail_screen_driver_dropdown.dart';
 import 'package:admin_eshop/modules/orders/screens/order_detail/widgets/order_detail_status_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -34,7 +38,8 @@ class OrderDetailsScreen extends StatefulWidget {
   }
 }
 
-class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin {
+class StateOrder extends State<OrderDetailsScreen>
+    with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   ScrollController controller = new ScrollController();
   late Animation? buttonSqueezeanimation;
@@ -76,10 +81,12 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
     controller = ScrollController();
     controller.addListener(() {
       setState(() {
-        fabIsVisible = controller.position.userScrollDirection == ScrollDirection.forward;
+        fabIsVisible =
+            controller.position.userScrollDirection == ScrollDirection.forward;
       });
     });
-    buttonController = new AnimationController(duration: new Duration(milliseconds: 2000), vsync: this);
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
     buttonSqueezeanimation = new Tween(
       begin: 70.0.w,
       end: 50.0,
@@ -126,7 +133,9 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                 _isNetworkAvail = await isNetworkAvailable();
                 if (_isNetworkAvail) {
                   Navigator.pushReplacement(
-                      context, MaterialPageRoute(builder: (BuildContext context) => super.widget));
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController!.reverse();
                   setState(() {});
@@ -190,265 +199,312 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
     // _isCancleable = model.isCancleable == "1" ? true : false;
     // _isReturnable = model.isReturnable == "1" ? true : false;
 
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: lightWhite,
-      appBar: getAppBar(ORDER_DETAIL, context),
-      // floatingActionButton: AnimatedOpacity(
-      //   child: Padding(
-      //     padding: const EdgeInsets.only(bottom: 108.0),
-      //     child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-      //       FloatingActionButton(
-      //         backgroundColor: lightWhite,
-      //         child: Image.asset(
-      //           'assets/images/whatsapp.png',
-      //           width: 25,
-      //           height: 25,
-      //           color: fontColor,
-      //         ),
-      //         onPressed: () async {
-      //           String text =
-      //               '''Hello ${widget.order.username},\n
-      //               Your order with id : ${widget.order.displayId} is ${describeEnum(widget.order.status)}
-      //               . If you have further query feel free to contact us.Thank you.''';
-      //           await launch("https://wa.me/${widget.model.countryCode + "" + widget.model.mobile}?text=$text");
-      //         },
-      //         heroTag: null,
-      //       ),
-      //       SizedBox(
-      //         height: 10
-      //       ),
-      //       FloatingActionButton(
-      //         backgroundColor: lightWhite,
-      //         child: Icon(
-      //           Icons.message,
-      //           color: fontColor,
-      //         ),
-      //         onPressed: () async {
-      //           String text =
-      //               'Hello ${widget.model.name},\nYour order with id : ${widget.model.id} is ${widget.model.activeStatus}. If you have further query feel free to contact us.Thank you.';
-      //
-      //           var uri = 'sms:${widget.model.mobile}?body=$text';
-      //           await launch(uri);
-      //         },
-      //         // onPressed: () => _someFunc(),
-      //         heroTag: null,
-      //       )
-      //     ]),
-      //   ),
-      //   duration: Duration(milliseconds: 100),
-      //   opacity: fabIsVisible ? 1 : 0,
-      // ),
-      body: _isNetworkAvail
-          ? Stack(
-              children: [
-                Column(
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => DriverListProvider()),
+      ],
+      child: Consumer<DriverListProvider>(
+        builder: (_, driverListP, __) => Scaffold(
+          key: _scaffoldKey,
+          backgroundColor: lightWhite,
+          appBar: getAppBar(ORDER_DETAIL, context),
+          // floatingActionButton: AnimatedOpacity(
+          //   child: Padding(
+          //     padding: const EdgeInsets.only(bottom: 108.0),
+          //     child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+          //       FloatingActionButton(
+          //         backgroundColor: lightWhite,
+          //         child: Image.asset(
+          //           'assets/images/whatsapp.png',
+          //           width: 25,
+          //           height: 25,
+          //           color: fontColor,
+          //         ),
+          //         onPressed: () async {
+          //           String text =
+          //               '''Hello ${widget.order.username},\n
+          //               Your order with id : ${widget.order.displayId} is ${describeEnum(widget.order.status)}
+          //               . If you have further query feel free to contact us.Thank you.''';
+          //           await launch("https://wa.me/${widget.model.countryCode + "" + widget.model.mobile}?text=$text");
+          //         },
+          //         heroTag: null,
+          //       ),
+          //       SizedBox(
+          //         height: 10
+          //       ),
+          //       FloatingActionButton(
+          //         backgroundColor: lightWhite,
+          //         child: Icon(
+          //           Icons.message,
+          //           color: fontColor,
+          //         ),
+          //         onPressed: () async {
+          //           String text =
+          //               'Hello ${widget.model.name},\nYour order with id : ${widget.model.id} is ${widget.model.activeStatus}. If you have further query feel free to contact us.Thank you.';
+          //
+          //           var uri = 'sms:${widget.model.mobile}?body=$text';
+          //           await launch(uri);
+          //         },
+          //         // onPressed: () => _someFunc(),
+          //         heroTag: null,
+          //       )
+          //     ]),
+          //   ),
+          //   duration: Duration(milliseconds: 100),
+          //   opacity: fabIsVisible ? 1 : 0,
+          // ),
+          body: _isNetworkAvail
+              ? Stack(
                   children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        controller: controller,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            children: [
-                              Card(
-                                  elevation: 0,
-                                  child: Container(
-                                      width: MediaQuery.of(context).size.width,
-                                      padding: EdgeInsets.all(12.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            ORDER_ID_LBL + widget.order.displayId,
-                                            style: Theme.of(context).textTheme.subtitle2!.copyWith(color: lightBlack2),
-                                          ),
-                                          Text(
-                                            ORDER_DATE +
-                                                " - " +
-                                                DateFormat('dd-MM-yyyy hh:mm a').format(widget.order.orderDate),
-                                            style: Theme.of(context).textTheme.subtitle2!.copyWith(color: lightBlack2),
-                                          ),
-                                          Text(
-                                            PAYMENT_MTHD + " - " + widget.order.paymentType,
-                                            style: Theme.of(context).textTheme.subtitle2!.copyWith(color: lightBlack2),
-                                          ),
-                                          SizedBox(height: 1.0.h),
-                                          Text(
-                                            "Order Status - " + describeEnum(widget.order.status),
-                                            style: Theme.of(context).textTheme.subtitle2!.copyWith(color: lightBlack2),
-                                          ),
-                                        ],
-                                      ))),
-                              // model.delDate != null && model.delDate.isNotEmpty
-                              //     ? Card(
-                              //         elevation: 0,
-                              //         child: Padding(
-                              //           padding: const EdgeInsets.all(12.0),
-                              //           child: Text(
-                              //             PREFER_DATE_TIME + ": " + model.delDate + " - " + model.delTime,
-                              //             style: Theme.of(context).textTheme.subtitle2!.copyWith(color: lightBlack2),
-                              //           ),
-                              //         ))
-                              //     : Container(),
-                              OrderDetailScreenOrderItems(orderItems: widget.order.items),
-                              // ListView.builder(
-                              //   shrinkWrap: true,
-                              //   itemCount: widget.order.items.length,
-                              //   physics: NeverScrollableScrollPhysics(),
-                              //   itemBuilder: (context, i) {
-                              //     OrderItem orderItem = widget.order.items[i];
-                              //     return productItem(orderItem, model, i);
-                              //   },
-                              // ),
-                              //widget.order.paymentType == "Bank Transfer" ? bankProof(widget.order) : Container(),
-                              shippingDetails(),
-                              priceDetails(),
-                              SizedBox(height: 1.0.h),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 2.5.w),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    if(widget.order.status.index < 2)
-                                    OrderDetailScreenStatusButton(
-                                        currStatus: widget.order.status, orderId: widget.order.id),
-                                    Spacer(),
-                                    if(widget.order.status.index != 4 && widget.order.status.index != 5)
-                                    OrderDetailScreenStatusButton(
-                                        currStatus: widget.order.status, cancelled: true, orderId: widget.order.id),
-                                  ],
-                                ),
+                    Column(
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            controller: controller,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                children: [
+                                  Card(
+                                      elevation: 0,
+                                      child: Container(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                ORDER_ID_LBL +
+                                                    widget.order.displayId,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .subtitle2!
+                                                    .copyWith(
+                                                        color: lightBlack2),
+                                              ),
+                                              Text(
+                                                ORDER_DATE +
+                                                    " - " +
+                                                    DateFormat(
+                                                            'dd-MM-yyyy hh:mm a')
+                                                        .format(widget
+                                                            .order.orderDate),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .subtitle2!
+                                                    .copyWith(
+                                                        color: lightBlack2),
+                                              ),
+                                              Text(
+                                                PAYMENT_MTHD +
+                                                    " - " +
+                                                    widget.order.paymentType,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .subtitle2!
+                                                    .copyWith(
+                                                        color: lightBlack2),
+                                              ),
+                                              SizedBox(height: 1.0.h),
+                                              Text(
+                                                "Order Status - " +
+                                                    describeEnum(
+                                                        widget.order.status),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .subtitle2!
+                                                    .copyWith(
+                                                        color: lightBlack2),
+                                              ),
+                                            ],
+                                          ))),
+                                  // model.delDate != null && model.delDate.isNotEmpty
+                                  //     ? Card(
+                                  //         elevation: 0,
+                                  //         child: Padding(
+                                  //           padding: const EdgeInsets.all(12.0),
+                                  //           child: Text(
+                                  //             PREFER_DATE_TIME + ": " + model.delDate + " - " + model.delTime,
+                                  //             style: Theme.of(context).textTheme.subtitle2!.copyWith(color: lightBlack2),
+                                  //           ),
+                                  //         ))
+                                  //     : Container(),
+                                  OrderDetailScreenOrderItems(
+                                      orderItems: widget.order.items),
+                                  // ListView.builder(
+                                  //   shrinkWrap: true,
+                                  //   itemCount: widget.order.items.length,
+                                  //   physics: NeverScrollableScrollPhysics(),
+                                  //   itemBuilder: (context, i) {
+                                  //     OrderItem orderItem = widget.order.items[i];
+                                  //     return productItem(orderItem, model, i);
+                                  //   },
+                                  // ),
+                                  //widget.order.paymentType == "Bank Transfer" ? bankProof(widget.order) : Container(),
+                                  shippingDetails(),
+                                  priceDetails(),
+                                  SizedBox(height: 1.0.h),
+                                  if (widget.order.status ==
+                                          OrderStatus.preparing ||
+                                      widget.order.status ==
+                                          OrderStatus.prepared)
+                                    OrderDetailScreenDriverDropdown(
+                                        widget.order),
+                                  SizedBox(height: 2.0.h),
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 2.5.w),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        if (widget.order.status.index < 2)
+                                          OrderDetailScreenStatusButton(
+                                              currStatus: widget.order.status,
+                                              orderId: widget.order.id),
+                                        Spacer(),
+                                        if (widget.order.status.index != 4 &&
+                                            widget.order.status.index != 5)
+                                          OrderDetailScreenStatusButton(
+                                              currStatus: widget.order.status,
+                                              cancelled: true,
+                                              orderId: widget.order.id),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: 4.0.h),
+                                ],
                               ),
-                              SizedBox(height: 4.0.h),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: Row(
+                            children: [
+                              // Expanded(
+                              //   flex: 1,
+                              //   child: Padding(
+                              //     padding: const EdgeInsets.only(right: 8.0),
+                              //     child: DropdownButtonFormField(
+                              //       isExpanded: true,
+                              //       dropdownColor: lightWhite,
+                              //       isDense: true,
+                              //       iconEnabledColor: fontColor,
+                              //       //iconSize: 40,
+                              //       hint: new Text(
+                              //         "Update Status",
+                              //         style: Theme.of(this.context)
+                              //             .textTheme
+                              //             .subtitle2!
+                              //             .copyWith(color: fontColor, fontWeight: FontWeight.bold),
+                              //       ),
+                              //       decoration: InputDecoration(
+                              //         filled: true,
+                              //         isDense: true,
+                              //         fillColor: lightWhite,
+                              //         contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                              //         enabledBorder: OutlineInputBorder(
+                              //           borderSide: BorderSide(color: fontColor),
+                              //         ),
+                              //       ),
+                              //
+                              //       value: describeEnum(widget.order.status),
+                              //       onChanged: (newValue) {
+                              //         setState(() {
+                              //           curStatus = newValue! as String?;
+                              //         });
+                              //       },
+                              //       items: statusList.map((String st) {
+                              //         return DropdownMenuItem<String>(
+                              //           value: st,
+                              //           child: Text(
+                              //             capitalize(st),
+                              //             style: Theme.of(this.context)
+                              //                 .textTheme
+                              //                 .subtitle2!
+                              //                 .copyWith(color: fontColor, fontWeight: FontWeight.bold),
+                              //           ),
+                              //         );
+                              //       }).toList(),
+                              //     ),
+                              //   ),
+                              // ),
+                              // Expanded(
+                              //     flex: 1,
+                              //     child: InkWell(
+                              //       child: Container(
+                              //           decoration: BoxDecoration(
+                              //               color: lightWhite,
+                              //               border: Border.all(
+                              //                 color: fontColor,
+                              //               ),
+                              //               borderRadius: BorderRadius.all(Radius.circular(5))),
+                              //           padding: EdgeInsets.all(10),
+                              //           child: Row(
+                              //             children: [
+                              //               Expanded(
+                              //                   child: Text(
+                              //                 widget.order.driver ?? 'Driver',
+                              //                 maxLines: 1,
+                              //                 overflow: TextOverflow.ellipsis,
+                              //                 style: Theme.of(this.context)
+                              //                     .textTheme
+                              //                     .subtitle2!
+                              //                     .copyWith(color: fontColor, fontWeight: FontWeight.bold),
+                              //               )),
+                              //               Icon(
+                              //                 Icons.arrow_drop_down,
+                              //                 color: fontColor,
+                              //               )
+                              //             ],
+                              //           )),
+                              //       onTap: () {
+                              //         //delboyDialog();
+                              //       },
+                              //     ))
                             ],
                           ),
                         ),
-                      ),
+                        // Container(
+                        //     margin: EdgeInsets.all(10),
+                        //     width: double.maxFinite,
+                        //     height: 45,
+                        //     child: ElevatedButton(
+                        //         style: ElevatedButton.styleFrom(
+                        //           primary: fontColor,
+                        //           onPrimary: Colors.white,
+                        //           onSurface: Colors.grey,
+                        //         ),
+                        //         onPressed: () async {
+                        //           _isNetworkAvail = await isNetworkAvailable();
+                        //           if (_isNetworkAvail) {
+                        //             if (model.otp != null &&
+                        //                 model.otp.isNotEmpty &&
+                        //                 model.otp != "0" &&
+                        //                 curStatus == DELIVERED)
+                        //               otpDialog(curStatus!, model.otp, model.id, false, 0);
+                        //             else
+                        //               updateOrder(curStatus!, updateOrderApi, model.id, false, 0);
+                        //           } else {
+                        //             await buttonController!.reverse();
+                        //             setState(() {});
+                        //           }
+                        //         },
+                        //         child: Text(
+                        //           UPDATE_ORDER,
+                        //           style: TextStyle(fontWeight: FontWeight.bold),
+                        //         )))
+                      ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Row(
-                        children: [
-                          // Expanded(
-                          //   flex: 1,
-                          //   child: Padding(
-                          //     padding: const EdgeInsets.only(right: 8.0),
-                          //     child: DropdownButtonFormField(
-                          //       isExpanded: true,
-                          //       dropdownColor: lightWhite,
-                          //       isDense: true,
-                          //       iconEnabledColor: fontColor,
-                          //       //iconSize: 40,
-                          //       hint: new Text(
-                          //         "Update Status",
-                          //         style: Theme.of(this.context)
-                          //             .textTheme
-                          //             .subtitle2!
-                          //             .copyWith(color: fontColor, fontWeight: FontWeight.bold),
-                          //       ),
-                          //       decoration: InputDecoration(
-                          //         filled: true,
-                          //         isDense: true,
-                          //         fillColor: lightWhite,
-                          //         contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                          //         enabledBorder: OutlineInputBorder(
-                          //           borderSide: BorderSide(color: fontColor),
-                          //         ),
-                          //       ),
-                          //
-                          //       value: describeEnum(widget.order.status),
-                          //       onChanged: (newValue) {
-                          //         setState(() {
-                          //           curStatus = newValue! as String?;
-                          //         });
-                          //       },
-                          //       items: statusList.map((String st) {
-                          //         return DropdownMenuItem<String>(
-                          //           value: st,
-                          //           child: Text(
-                          //             capitalize(st),
-                          //             style: Theme.of(this.context)
-                          //                 .textTheme
-                          //                 .subtitle2!
-                          //                 .copyWith(color: fontColor, fontWeight: FontWeight.bold),
-                          //           ),
-                          //         );
-                          //       }).toList(),
-                          //     ),
-                          //   ),
-                          // ),
-                          // Expanded(
-                          //     flex: 1,
-                          //     child: InkWell(
-                          //       child: Container(
-                          //           decoration: BoxDecoration(
-                          //               color: lightWhite,
-                          //               border: Border.all(
-                          //                 color: fontColor,
-                          //               ),
-                          //               borderRadius: BorderRadius.all(Radius.circular(5))),
-                          //           padding: EdgeInsets.all(10),
-                          //           child: Row(
-                          //             children: [
-                          //               Expanded(
-                          //                   child: Text(
-                          //                 widget.order.driver ?? 'Driver',
-                          //                 maxLines: 1,
-                          //                 overflow: TextOverflow.ellipsis,
-                          //                 style: Theme.of(this.context)
-                          //                     .textTheme
-                          //                     .subtitle2!
-                          //                     .copyWith(color: fontColor, fontWeight: FontWeight.bold),
-                          //               )),
-                          //               Icon(
-                          //                 Icons.arrow_drop_down,
-                          //                 color: fontColor,
-                          //               )
-                          //             ],
-                          //           )),
-                          //       onTap: () {
-                          //         //delboyDialog();
-                          //       },
-                          //     ))
-                        ],
-                      ),
-                    ),
-                    // Container(
-                    //     margin: EdgeInsets.all(10),
-                    //     width: double.maxFinite,
-                    //     height: 45,
-                    //     child: ElevatedButton(
-                    //         style: ElevatedButton.styleFrom(
-                    //           primary: fontColor,
-                    //           onPrimary: Colors.white,
-                    //           onSurface: Colors.grey,
-                    //         ),
-                    //         onPressed: () async {
-                    //           _isNetworkAvail = await isNetworkAvailable();
-                    //           if (_isNetworkAvail) {
-                    //             if (model.otp != null &&
-                    //                 model.otp.isNotEmpty &&
-                    //                 model.otp != "0" &&
-                    //                 curStatus == DELIVERED)
-                    //               otpDialog(curStatus!, model.otp, model.id, false, 0);
-                    //             else
-                    //               updateOrder(curStatus!, updateOrderApi, model.id, false, 0);
-                    //           } else {
-                    //             await buttonController!.reverse();
-                    //             setState(() {});
-                    //           }
-                    //         },
-                    //         child: Text(
-                    //           UPDATE_ORDER,
-                    //           style: TextStyle(fontWeight: FontWeight.bold),
-                    //         )))
+                    showCircularProgress(_isProgress, primary),
                   ],
-                ),
-                showCircularProgress(_isProgress, primary),
-              ],
-            )
-          : noInternet(context),
+                )
+              : noInternet(context),
+        ),
+      ),
     );
   }
 
@@ -469,11 +525,13 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
     await showDialog(
         context: context,
         builder: (BuildContext context) {
-          return StatefulBuilder(builder: (BuildContext context, StateSetter setStater) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setStater) {
             delBoyState = setStater;
             return AlertDialog(
               contentPadding: const EdgeInsets.all(0.0),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
               content: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -482,7 +540,10 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                       padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 0),
                       child: Text(
                         'Select Delivery Boy',
-                        style: Theme.of(this.context).textTheme.subtitle1!.copyWith(color: fontColor),
+                        style: Theme.of(this.context)
+                            .textTheme
+                            .subtitle1!
+                            .copyWith(color: fontColor),
                       )),
                   TextField(
                     controller: _controller,
@@ -504,7 +565,9 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                   Divider(color: lightBlack),
                   Flexible(
                     child: SingleChildScrollView(
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: getLngList()),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: getLngList()),
                     ),
                   ),
                 ],
@@ -543,54 +606,66 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
         .toList();
   }
 
-  otpDialog(String curSelected, String otp, String id, bool item, int index) async {
+  otpDialog(
+      String curSelected, String otp, String id, bool item, int index) async {
     await showDialog(
         context: context,
         builder: (BuildContext context) {
-          return StatefulBuilder(builder: (BuildContext context, StateSetter setStater) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setStater) {
             return AlertDialog(
               contentPadding: const EdgeInsets.all(0.0),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
               content: SingleChildScrollView(
                   scrollDirection: Axis.vertical,
-                  child:
-                      Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                    Padding(
-                        padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
-                        child: Text(
-                          OTP_LBL,
-                          style: Theme.of(this.context).textTheme.subtitle1!.copyWith(color: fontColor),
-                        )),
-                    Divider(color: lightBlack),
-                    Form(
-                        key: _formkey,
-                        child: new Column(
-                          children: <Widget>[
-                            Padding(
-                                padding: EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
-                                child: TextFormField(
-                                  keyboardType: TextInputType.number,
-                                  validator: (String? value) {
-                                    if (value!.length == 0)
-                                      return FIELD_REQUIRED;
-                                    else if (value.trim() != otp)
-                                      return OTPERROR;
-                                    else
-                                      return null;
-                                  },
-                                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                                  decoration: InputDecoration(
-                                    hintText: OTP_ENTER,
-                                    hintStyle: Theme.of(this.context)
-                                        .textTheme
-                                        .subtitle1!
-                                        .copyWith(color: lightBlack, fontWeight: FontWeight.normal),
-                                  ),
-                                  controller: otpC,
-                                )),
-                          ],
-                        ))
-                  ])),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                            padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                            child: Text(
+                              OTP_LBL,
+                              style: Theme.of(this.context)
+                                  .textTheme
+                                  .subtitle1!
+                                  .copyWith(color: fontColor),
+                            )),
+                        Divider(color: lightBlack),
+                        Form(
+                            key: _formkey,
+                            child: new Column(
+                              children: <Widget>[
+                                Padding(
+                                    padding:
+                                        EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                    child: TextFormField(
+                                      keyboardType: TextInputType.number,
+                                      validator: (String? value) {
+                                        if (value!.length == 0)
+                                          return FIELD_REQUIRED;
+                                        else if (value.trim() != otp)
+                                          return OTPERROR;
+                                        else
+                                          return null;
+                                      },
+                                      autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                      decoration: InputDecoration(
+                                        hintText: OTP_ENTER,
+                                        hintStyle: Theme.of(this.context)
+                                            .textTheme
+                                            .subtitle1!
+                                            .copyWith(
+                                                color: lightBlack,
+                                                fontWeight: FontWeight.normal),
+                                      ),
+                                      controller: otpC,
+                                    )),
+                              ],
+                            ))
+                      ])),
               actions: <Widget>[
                 new FlatButton(
                     child: Text(
@@ -598,7 +673,8 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                       style: Theme.of(this.context)
                           .textTheme
                           .subtitle2!
-                          .copyWith(color: lightBlack, fontWeight: FontWeight.bold),
+                          .copyWith(
+                              color: lightBlack, fontWeight: FontWeight.bold),
                     ),
                     onPressed: () {
                       Navigator.pop(context);
@@ -609,7 +685,8 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                       style: Theme.of(this.context)
                           .textTheme
                           .subtitle2!
-                          .copyWith(color: fontColor, fontWeight: FontWeight.bold),
+                          .copyWith(
+                              color: fontColor, fontWeight: FontWeight.bold),
                     ),
                     onPressed: () {
                       final form = _formkey.currentState;
@@ -631,9 +708,11 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
     var url = '';
 
     if (Platform.isAndroid) {
-      url = "https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving&dir_action=navigate";
+      url =
+          "https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving&dir_action=navigate";
     } else {
-      url = "http://maps.apple.com/?saddr=&daddr=$lat,$lng&directionsmode=driving&dir_action=navigate";
+      url =
+          "http://maps.apple.com/?saddr=&daddr=$lat,$lng&directionsmode=driving&dir_action=navigate";
     }
 
     if (await canLaunch(url)) {
@@ -648,14 +727,13 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
         elevation: 0,
         child: Padding(
             padding: EdgeInsets.fromLTRB(0, 15.0, 0, 15.0),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Padding(
                   padding: EdgeInsets.only(left: 15.0, right: 15.0),
                   child: Text(PRICE_DETAIL,
-                      style: Theme.of(context)
-                          .textTheme
-                          .subtitle2!
-                          .copyWith(color: fontColor, fontWeight: FontWeight.bold))),
+                      style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                          color: fontColor, fontWeight: FontWeight.bold))),
               Divider(
                 color: lightBlack,
               ),
@@ -666,9 +744,18 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(PRICE_LBL + " " + ":",
-                          style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2)),
-                      Text(CUR_CURRENCY + " " + widget.order.subTotal!.toStringAsFixed(2),
-                          style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2))
+                          style: Theme.of(context)
+                              .textTheme
+                              .button!
+                              .copyWith(color: lightBlack2)),
+                      Text(
+                          CUR_CURRENCY +
+                              " " +
+                              widget.order.subTotal!.toStringAsFixed(2),
+                          style: Theme.of(context)
+                              .textTheme
+                              .button!
+                              .copyWith(color: lightBlack2))
                     ],
                   ),
                 ),
@@ -678,9 +765,19 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(DELIVERY_CHARGE + " " + ":",
-                        style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2)),
-                    Text("+ " + CUR_CURRENCY + " " + widget.order.deliveryFee.toStringAsFixed(2),
-                        style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2))
+                        style: Theme.of(context)
+                            .textTheme
+                            .button!
+                            .copyWith(color: lightBlack2)),
+                    Text(
+                        "+ " +
+                            CUR_CURRENCY +
+                            " " +
+                            widget.order.deliveryFee.toStringAsFixed(2),
+                        style: Theme.of(context)
+                            .textTheme
+                            .button!
+                            .copyWith(color: lightBlack2))
                   ],
                 ),
               ),
@@ -692,9 +789,20 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                   children: [
                     // Text(TAXPER + " (" + widget.model.taxPer + ")" + " " + ":",
                     //     style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2)),
-                    Text("Tax", style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2)),
-                    Text("+ " + CUR_CURRENCY + " " + widget.order.tax.toStringAsFixed(2),
-                        style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2))
+                    Text("Tax",
+                        style: Theme.of(context)
+                            .textTheme
+                            .button!
+                            .copyWith(color: lightBlack2)),
+                    Text(
+                        "+ " +
+                            CUR_CURRENCY +
+                            " " +
+                            widget.order.tax.toStringAsFixed(2),
+                        style: Theme.of(context)
+                            .textTheme
+                            .button!
+                            .copyWith(color: lightBlack2))
                   ],
                 ),
               ),
@@ -706,9 +814,19 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(PROMO_CODE_DIS_LBL + " " + ":",
-                          style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2)),
-                      Text("- " + CUR_CURRENCY + " " + widget.order.promocodeValue!.toStringAsFixed(2),
-                          style: Theme.of(context).textTheme.button!.copyWith(color: lightBlack2))
+                          style: Theme.of(context)
+                              .textTheme
+                              .button!
+                              .copyWith(color: lightBlack2)),
+                      Text(
+                          "- " +
+                              CUR_CURRENCY +
+                              " " +
+                              widget.order.promocodeValue!.toStringAsFixed(2),
+                          style: Theme.of(context)
+                              .textTheme
+                              .button!
+                              .copyWith(color: lightBlack2))
                     ],
                   ),
                 ),
@@ -731,15 +849,14 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(PAYABLE + " " + ":",
-                        style: Theme.of(context)
-                            .textTheme
-                            .button!
-                            .copyWith(color: lightBlack, fontWeight: FontWeight.bold)),
-                    Text(CUR_CURRENCY + " " + widget.order.totalPrice.toStringAsFixed(2),
-                        style: Theme.of(context)
-                            .textTheme
-                            .button!
-                            .copyWith(color: lightBlack, fontWeight: FontWeight.bold))
+                        style: Theme.of(context).textTheme.button!.copyWith(
+                            color: lightBlack, fontWeight: FontWeight.bold)),
+                    Text(
+                        CUR_CURRENCY +
+                            " " +
+                            widget.order.totalPrice.toStringAsFixed(2),
+                        style: Theme.of(context).textTheme.button!.copyWith(
+                            color: lightBlack, fontWeight: FontWeight.bold))
                   ],
                 ),
               ),
@@ -751,7 +868,8 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
         elevation: 0,
         child: Padding(
             padding: EdgeInsets.fromLTRB(0, 15.0, 0, 15.0),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Padding(
                   padding: EdgeInsets.only(left: 15.0, right: 15.0),
                   child: Row(
@@ -760,7 +878,9 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                           style: Theme.of(context)
                               .textTheme
                               .subtitle2!
-                              .copyWith(color: fontColor, fontWeight: FontWeight.bold)),
+                              .copyWith(
+                                  color: fontColor,
+                                  fontWeight: FontWeight.bold)),
                       Spacer(),
                       Container(
                         height: 30,
@@ -770,26 +890,33 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
                               color: fontColor,
                             ),
                             onPressed: () {
-                              _launchMap(widget.order.deliveryAddress.lat, widget.order.deliveryAddress.long);
+                              _launchMap(widget.order.deliveryAddress.lat,
+                                  widget.order.deliveryAddress.long);
                             }),
                       )
                     ],
                   )),
               Divider(color: lightBlack),
-              Padding(padding: EdgeInsets.only(left: 15.0, right: 15.0), child: Text(widget.order.username)),
+              Padding(
+                  padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                  child: Text(widget.order.username)),
               SizedBox(height: 1.0.h),
               Padding(
                   padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 3),
-                  child: Text(widget.order.deliveryAddress.streetAddress ?? "", style: TextStyle(color: lightBlack2))),
+                  child: Text(widget.order.deliveryAddress.streetAddress ?? "",
+                      style: TextStyle(color: lightBlack2))),
               if (widget.order.userPhoneNumber != null)
                 InkWell(
                   child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 5),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 15.0, vertical: 5),
                       child: Row(
                         children: [
                           Icon(Icons.call, size: 15, color: fontColor),
                           Text(" " + widget.order.userPhoneNumber.toString(),
-                              style: TextStyle(color: fontColor, decoration: TextDecoration.underline)),
+                              style: TextStyle(
+                                  color: fontColor,
+                                  decoration: TextDecoration.underline)),
                         ],
                       )),
                   onTap: _launchCaller,
@@ -1072,7 +1199,9 @@ class StateOrder extends State<OrderDetailsScreen> with TickerProviderStateMixin
   //       ));
   // }
 
-  void _launchURL(String _url) async => await canLaunch(_url) ? await launch(_url) : throw 'Could not launch $_url';
+  void _launchURL(String _url) async => await canLaunch(_url)
+      ? await launch(_url)
+      : throw 'Could not launch $_url';
 
   // Future<void> deleteBankProof(int i, Order_Model model) async {
   //   _isNetworkAvail = await isNetworkAvailable();

@@ -10,6 +10,7 @@ import 'package:admin_eshop/Helper/Session.dart';
 import 'package:admin_eshop/Helper/String.dart';
 import 'package:admin_eshop/Models/Order_Model.dart';
 import 'package:admin_eshop/config/themes/base_theme_colors.dart';
+import 'package:admin_eshop/modules/category/screens/category_list/categories_list_screen.dart';
 import 'package:admin_eshop/modules/main/blocs/selected_drawer/selected_drawer_cubit.dart';
 import 'package:admin_eshop/modules/main/providers/CardsCountsProvider.dart';
 import 'package:admin_eshop/modules/main/providers/HomeScreenProvider.dart';
@@ -24,6 +25,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -44,10 +46,16 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
   List<Order_Model> tempList = [];
   late Animation buttonSqueezeanimation;
   late AnimationController buttonController;
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
   late String profile;
   ScrollController controller = new ScrollController();
-  late String? orderCount, productCount, custCount, delBoyCount, soldOutCount, lowStockCount;
+  late String? orderCount,
+      productCount,
+      custCount,
+      delBoyCount,
+      soldOutCount,
+      lowStockCount;
   Map<int, LineChartData>? chartList;
   List days = [], dayEarning = [];
   List months = [], monthEarning = [];
@@ -66,10 +74,12 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
     //getOrder();
     // getDeliveryBoy();
 
-    buttonController = new AnimationController(duration: new Duration(milliseconds: 2000), vsync: this);
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
 
-    buttonSqueezeanimation = new Tween(begin: 70.0.w, end: 50.0)
-        .animate(new CurvedAnimation(parent: buttonController, curve: new Interval(0.0, 0.150)));
+    buttonSqueezeanimation = new Tween(begin: 70.0.w, end: 50.0).animate(
+        new CurvedAnimation(
+            parent: buttonController, curve: new Interval(0.0, 0.150)));
 
     super.initState();
   }
@@ -83,14 +93,17 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
       child: MultiProvider(
         providers: [
           Provider<int>.value(value: touchedIndex), // to be removed
-          ChangeNotifierProvider<HomeScreenProvider>(create: (_) => HomeScreenProvider()),
-          ChangeNotifierProvider<CardsCountsProvider>(create: (_) => CardsCountsProvider()),
+          ChangeNotifierProvider<HomeScreenProvider>(
+              create: (_) => HomeScreenProvider()),
+          ChangeNotifierProvider<CardsCountsProvider>(
+              create: (_) => CardsCountsProvider()),
         ],
         child: Builder(
           builder: (context) => Scaffold(
             backgroundColor: AppColors.lightWhite,
             appBar: AppBar(
-                title: Text(appName, style: TextStyle(color: AppColors.grad2Color)),
+                title: Text(appName,
+                    style: TextStyle(color: AppColors.grad2Color)),
                 iconTheme: IconThemeData(color: AppColors.grad2Color),
                 backgroundColor: AppColors.white),
             drawer: HomeScreenDrawer(),
@@ -105,95 +118,125 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                             physics: AlwaysScrollableScrollPhysics(),
                             child: Padding(
                                 padding: const EdgeInsets.all(10.0),
-                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  _detailHeader(context),
-                                  _detailHeader2(context),
-                                  Container(
-                                    height: 250,
-                                    child: Card(
-                                      elevation: 0,
-                                      margin: EdgeInsets.only(top: 10, left: 5, right: 5),
-                                      child: Stack(
-                                        children: <Widget>[
-                                          Column(
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _detailHeader(context),
+                                      _detailHeader2(context),
+                                      Container(
+                                        height: 250,
+                                        child: Card(
+                                          elevation: 0,
+                                          margin: EdgeInsets.only(
+                                              top: 10, left: 5, right: 5),
+                                          child: Stack(
                                             children: <Widget>[
-                                              Align(
-                                                alignment: Alignment.topLeft,
-                                                child: Padding(
-                                                  padding: const EdgeInsets.only(left: 8.0, top: 8),
-                                                  child: Text(
-                                                    'Product Sales',
-                                                    style:
-                                                        Theme.of(context).textTheme.headline6!.copyWith(color: primary),
+                                              Column(
+                                                children: <Widget>[
+                                                  Align(
+                                                    alignment:
+                                                        Alignment.topLeft,
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 8.0,
+                                                              top: 8),
+                                                      child: Text(
+                                                        'Product Sales',
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .headline6!
+                                                            .copyWith(
+                                                                color: primary),
+                                                      ),
+                                                    ),
                                                   ),
-                                                ),
-                                              ),
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.end,
-                                                children: [
-                                                  TextButton(
-                                                      style: curChart == 0
-                                                          ? TextButton.styleFrom(
-                                                              primary: Colors.white,
-                                                              backgroundColor: primary,
-                                                              onSurface: Colors.grey,
-                                                            )
-                                                          : null,
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          curChart = 0;
-                                                        });
-                                                      },
-                                                      child: Text('Day')),
-                                                  TextButton(
-                                                      style: curChart == 1
-                                                          ? TextButton.styleFrom(
-                                                              primary: Colors.white,
-                                                              backgroundColor: primary,
-                                                              onSurface: Colors.grey,
-                                                            )
-                                                          : null,
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          curChart = 1;
-                                                        });
-                                                      },
-                                                      child: Text('Week')),
-                                                  TextButton(
-                                                      style: curChart == 2
-                                                          ? TextButton.styleFrom(
-                                                              primary: Colors.white,
-                                                              backgroundColor: primary,
-                                                              onSurface: Colors.grey,
-                                                            )
-                                                          : null,
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          curChart = 2;
-                                                        });
-                                                      },
-                                                      child: Text('Month'))
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.end,
+                                                    children: [
+                                                      TextButton(
+                                                          style: curChart == 0
+                                                              ? TextButton
+                                                                  .styleFrom(
+                                                                  primary: Colors
+                                                                      .white,
+                                                                  backgroundColor:
+                                                                      primary,
+                                                                  onSurface:
+                                                                      Colors
+                                                                          .grey,
+                                                                )
+                                                              : null,
+                                                          onPressed: () {
+                                                            setState(() {
+                                                              curChart = 0;
+                                                            });
+                                                          },
+                                                          child: Text('Day')),
+                                                      TextButton(
+                                                          style: curChart == 1
+                                                              ? TextButton
+                                                                  .styleFrom(
+                                                                  primary: Colors
+                                                                      .white,
+                                                                  backgroundColor:
+                                                                      primary,
+                                                                  onSurface:
+                                                                      Colors
+                                                                          .grey,
+                                                                )
+                                                              : null,
+                                                          onPressed: () {
+                                                            setState(() {
+                                                              curChart = 1;
+                                                            });
+                                                          },
+                                                          child: Text('Week')),
+                                                      TextButton(
+                                                          style: curChart == 2
+                                                              ? TextButton
+                                                                  .styleFrom(
+                                                                  primary: Colors
+                                                                      .white,
+                                                                  backgroundColor:
+                                                                      primary,
+                                                                  onSurface:
+                                                                      Colors
+                                                                          .grey,
+                                                                )
+                                                              : null,
+                                                          onPressed: () {
+                                                            setState(() {
+                                                              curChart = 2;
+                                                            });
+                                                          },
+                                                          child: Text('Month'))
+                                                    ],
+                                                  ),
+                                                  SizedBox(height: 2.0.h),
+                                                  if (chartList != null)
+                                                    Expanded(
+                                                      child: LineChart(
+                                                        chartList![curChart]!,
+                                                        swapAnimationDuration:
+                                                            const Duration(
+                                                                milliseconds:
+                                                                    250),
+                                                      ),
+                                                    ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
                                                 ],
-                                              ),
-                                              SizedBox(height: 2.0.h),
-                                              if (chartList != null)
-                                                Expanded(
-                                                  child: LineChart(
-                                                    chartList![curChart]!,
-                                                    swapAnimationDuration: const Duration(milliseconds: 250),
-                                                  ),
-                                                ),
-                                              const SizedBox(
-                                                height: 10,
                                               ),
                                             ],
                                           ),
-                                        ],
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                  catChart()
-                                ]))))
+                                      catChart()
+                                    ]))))
                 : noInternet(context),
           ),
         ),
@@ -207,7 +250,8 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
       days.add(0);
     }
     List<FlSpot> spots = dayEarning.asMap().entries.map((e) {
-      return FlSpot(double.parse(days[e.key].toString()), double.parse(e.value.toString()));
+      return FlSpot(double.parse(days[e.key].toString()),
+          double.parse(e.value.toString()));
     }).toList();
 
     return LineChartData(
@@ -291,7 +335,10 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   "Category wise product's count",
-                  style: Theme.of(context).textTheme.headline6!.copyWith(color: primary),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline6!
+                      .copyWith(color: primary),
                 ),
               ),
               Expanded(
@@ -308,12 +355,21 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                           children: [
                             PieChart(
                               PieChartData(
-                                  pieTouchData: PieTouchData(touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                                  pieTouchData: PieTouchData(touchCallback:
+                                      (FlTouchEvent event, pieTouchResponse) {
                                     setState(() {
-                                      var touchedIndex = context.read<HomeScreenProvider>().touchedIndex;
-                                      final desiredTouch = event is! FlPointerExitEvent && event is! FlTapUpEvent;
-                                      if (desiredTouch && pieTouchResponse?.touchedSection != null) {
-                                        touchedIndex = pieTouchResponse!.touchedSection!.touchedSectionIndex;
+                                      var touchedIndex = context
+                                          .read<HomeScreenProvider>()
+                                          .touchedIndex;
+                                      final desiredTouch =
+                                          event is! FlPointerExitEvent &&
+                                              event is! FlTapUpEvent;
+                                      if (desiredTouch &&
+                                          pieTouchResponse?.touchedSection !=
+                                              null) {
+                                        touchedIndex = pieTouchResponse!
+                                            .touchedSection!
+                                            .touchedSectionIndex;
                                       } else {
                                         touchedIndex = -1;
                                       }
@@ -341,7 +397,9 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                           return HomeScreenCategoryProductCountIndicator(
                               color: colorList[i],
                               text: catList[i] + " " + catCountList[i],
-                              textColor: touchedIndex == i ? Colors.black : Colors.grey,
+                              textColor: touchedIndex == i
+                                  ? Colors.black
+                                  : Colors.grey,
                               isSquare: true);
                         },
                       ),
@@ -370,7 +428,8 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
         value: double.parse(catCountList[i].toString()),
         title: "",
         radius: radius,
-        titleStyle: TextStyle(fontSize: fontSize, color: const Color(0xffffffff)),
+        titleStyle:
+            TextStyle(fontSize: fontSize, color: const Color(0xffffffff)),
       );
     });
   }
@@ -389,7 +448,8 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
       weeks.add(0);
     }
     List<FlSpot> spots = weekEarning.asMap().entries.map((e) {
-      return FlSpot(double.parse(e.key.toString()), double.parse(e.value.toString()));
+      return FlSpot(
+          double.parse(e.key.toString()), double.parse(e.value.toString()));
     }).toList();
 
     return LineChartData(
@@ -467,7 +527,8 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
     }
 
     List<FlSpot> spots = monthEarning.asMap().entries.map((e) {
-      return FlSpot(double.parse(e.key.toString()), double.parse(e.value.toString()));
+      return FlSpot(
+          double.parse(e.key.toString()), double.parse(e.value.toString()));
     }).toList();
 
     return LineChartData(
@@ -593,7 +654,9 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
 
   setSnackbar(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
-        content: Text(msg, textAlign: TextAlign.center, style: TextStyle(color: AppColors.black)),
+        content: Text(msg,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.black)),
         backgroundColor: AppColors.white,
         elevation: 1.0));
   }
@@ -606,7 +669,8 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
       back = Colors.green;
     else if ((model.activeStatus) == SHIPPED)
       back = Colors.orange;
-    else if ((model.activeStatus) == CANCELLED || model.activeStatus == RETURNED)
+    else if ((model.activeStatus) == CANCELLED ||
+        model.activeStatus == RETURNED)
       back = Colors.red;
     else if ((model.activeStatus) == PROCESSED)
       back = Colors.indigo;
@@ -620,7 +684,9 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(4),
         child: Padding(
             padding: EdgeInsets.all(8.0),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
+                    Widget>[
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Row(
@@ -630,9 +696,12 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                     Spacer(),
                     Container(
                       margin: EdgeInsets.only(left: 8),
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                      decoration:
-                          BoxDecoration(color: back, borderRadius: new BorderRadius.all(const Radius.circular(4.0))),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                      decoration: BoxDecoration(
+                          color: back,
+                          borderRadius:
+                              new BorderRadius.all(const Radius.circular(4.0))),
                       child: Text(
                         capitalize(model.activeStatus!),
                         style: TextStyle(color: white),
@@ -643,7 +712,8 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
               ),
               Divider(),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
                 child: Row(
                   children: [
                     Flexible(
@@ -652,7 +722,9 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                           Icon(Icons.person, size: 14),
                           Expanded(
                             child: Text(
-                              model.name != null && model.name!.length > 0 ? " " + capitalize(model.name!) : " ",
+                              model.name != null && model.name!.length > 0
+                                  ? " " + capitalize(model.name!)
+                                  : " ",
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -670,7 +742,9 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                           ),
                           Text(
                             " " + model.mobile!,
-                            style: TextStyle(color: fontColor, decoration: TextDecoration.underline),
+                            style: TextStyle(
+                                color: fontColor,
+                                decoration: TextDecoration.underline),
                           ),
                         ],
                       ),
@@ -682,13 +756,15 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
                 child: Row(
                   children: [
                     Row(
                       children: [
                         Icon(Icons.money, size: 14),
-                        Text(" Payable: " + CUR_CURRENCY + " " + model.payable!),
+                        Text(
+                            " Payable: " + CUR_CURRENCY + " " + model.payable!),
                       ],
                     ),
                     Spacer(),
@@ -702,7 +778,8 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
                 child: Row(
                   children: [
                     Icon(Icons.date_range, size: 14),
@@ -736,7 +813,7 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => OrderList(),
+                        builder: (context) => OrderListScreen(),
                       ));
                 },
                 child: Padding(
@@ -747,10 +824,11 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                         Icons.shopping_cart,
                         color: fontColor,
                       ),
-                      Text(ORDER),
+                      Text(AppLocalizations.of(context)!.orders),
                       Text(
                         storeCounts.orderCount.toString(),
-                        style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: fontColor, fontWeight: FontWeight.bold),
                       )
                     ],
                   ),
@@ -779,10 +857,11 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                       Icons.dashboard,
                       color: fontColor,
                     ),
-                    Text(PRO_LBL),
+                    Text(AppLocalizations.of(context)!.items),
                     Text(
                       storeCounts.productCount.toString(),
-                      style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: fontColor, fontWeight: FontWeight.bold),
                     )
                   ],
                 ),
@@ -790,6 +869,48 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
         ),
+        Expanded(
+          flex: 1,
+          child: Card(
+            elevation: 0,
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => CategoriesListScreen()));
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(18.0),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.category,
+                      color: fontColor,
+                    ),
+                    Text(
+                      AppLocalizations.of(context)!.categories,
+                    ),
+                    Text(
+                      //custCount ?? "",
+                      storeCounts.categoriesCount.toString(),
+                      style: TextStyle(
+                          color: fontColor, fontWeight: FontWeight.bold),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  _detailHeader2(BuildContext context) {
+    final storeCounts = context.watch<CardsCountsProvider>().storeCounts;
+    return Row(
+      children: [
         Expanded(
           flex: 1,
           child: Card(
@@ -812,11 +933,14 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                       Icons.group,
                       color: fontColor,
                     ),
-                    Text(CUST_LBL),
+                    Text(
+                      AppLocalizations.of(context)!.users,
+                    ),
                     Text(
                       //custCount ?? "",
                       storeCounts.usersCount.toString(),
-                      style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: fontColor, fontWeight: FontWeight.bold),
                     )
                   ],
                 ),
@@ -824,14 +948,6 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
         ),
-      ],
-    );
-  }
-
-  _detailHeader2(BuildContext context) {
-    final storeCounts = context.watch<CardsCountsProvider>().storeCounts;
-    return Row(
-      children: [
         Expanded(
           flex: 1,
           child: Card(
@@ -855,14 +971,15 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                         color: fontColor,
                       ),
                       Text(
-                        Del_LBL,
+                        AppLocalizations.of(context)!.drivers,
                         textAlign: TextAlign.center,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         storeCounts.driverCount.toString(),
-                        style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: fontColor, fontWeight: FontWeight.bold),
                       )
                     ],
                   ),
@@ -892,14 +1009,15 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
                       color: fontColor,
                     ),
                     Text(
-                      SOLD_LBL,
+                      AppLocalizations.of(context)!.unavailable,
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       storeCounts.unavailableItemsCount.toString(),
-                      style: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: fontColor, fontWeight: FontWeight.bold),
                     )
                   ],
                 ),
@@ -957,7 +1075,8 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
       var parameter = {USER_ID: CUR_USERID};
 
       Response response =
-          await post(getStaticsApi, body: parameter, headers: headers).timeout(Duration(seconds: timeOut));
+          await post(getStaticsApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
@@ -967,20 +1086,37 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
         if (!error) {
           CUR_CURRENCY = getdata["currency_symbol"];
 
-          readOrder = getdata["permissions"]["orders"]["read"] == "on" ? true : false;
-          editOrder = getdata["permissions"]["orders"]["update"] == "on" ? true : false;
-          deleteOrder = getdata["permissions"]["orders"]["delete"] == "on" ? true : false;
+          readOrder =
+              getdata["permissions"]["orders"]["read"] == "on" ? true : false;
+          editOrder =
+              getdata["permissions"]["orders"]["update"] == "on" ? true : false;
+          deleteOrder =
+              getdata["permissions"]["orders"]["delete"] == "on" ? true : false;
 
-          readProduct = getdata["permissions"]["product"]["read"] == "on" ? true : false;
-          editProduct = getdata["permissions"]["product"]["update"] == "on" ? true : false;
-          deletProduct = getdata["permissions"]["product"]["delete"] == "on" ? true : false;
+          readProduct =
+              getdata["permissions"]["product"]["read"] == "on" ? true : false;
+          editProduct = getdata["permissions"]["product"]["update"] == "on"
+              ? true
+              : false;
+          deletProduct = getdata["permissions"]["product"]["delete"] == "on"
+              ? true
+              : false;
 
-          readCust = getdata["permissions"]["customers"]["read"] == "on" ? true : false;
-          readDel = getdata["permissions"]["delivery_boy"]["read"] == "on" ? true : false;
+          readCust = getdata["permissions"]["customers"]["read"] == "on"
+              ? true
+              : false;
+          readDel = getdata["permissions"]["delivery_boy"]["read"] == "on"
+              ? true
+              : false;
 
-          ticketRead = getdata["permissions"]["support_tickets"]["read"] == "on" ? true : false;
+          ticketRead = getdata["permissions"]["support_tickets"]["read"] == "on"
+              ? true
+              : false;
 
-          ticketWrite = getdata["permissions"]["support_tickets"]["update"] == "on" ? true : false;
+          ticketWrite =
+              getdata["permissions"]["support_tickets"]["update"] == "on"
+                  ? true
+                  : false;
 
           var count = getdata['counts'][0];
           productCount = count["product_counter"];
@@ -993,7 +1129,8 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
           days = getdata['earnings'][0]["daily_earnings"]['day'];
           dayEarning = getdata['earnings'][0]["daily_earnings"]['total_sale'];
           months = getdata['earnings'][0]["monthly_earnings"]['month_name'];
-          monthEarning = getdata['earnings'][0]["monthly_earnings"]['total_sale'];
+          monthEarning =
+              getdata['earnings'][0]["monthly_earnings"]['total_sale'];
 
           weeks = getdata['earnings'][0]["weekly_earnings"]['week'];
           weekEarning = getdata['earnings'][0]["weekly_earnings"]['total_sale'];
@@ -1004,7 +1141,8 @@ class StateHome extends State<HomeScreen> with TickerProviderStateMixin {
           catCountList = getdata['category_wise_product_count']['counter'];
           catList = getdata['category_wise_product_count']['cat_name'];
           colorList.clear();
-          for (int i = 0; i < catList.length; i++) colorList.add(generateRandomColor());
+          for (int i = 0; i < catList.length; i++)
+            colorList.add(generateRandomColor());
         } else {
           setSnackbar(msg);
         }
