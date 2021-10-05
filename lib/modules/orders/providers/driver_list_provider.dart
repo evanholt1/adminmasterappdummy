@@ -1,9 +1,7 @@
 import 'dart:convert';
 
 import 'package:admin_eshop/Models/driver.dart';
-import 'package:admin_eshop/constants/ApiPaths.dart';
 import 'package:admin_eshop/modules/orders/repositories/order_repo.dart';
-import 'package:admin_eshop/utils/services/RestApiService.dart';
 import 'package:flutter/cupertino.dart';
 
 class DriverListProvider extends ChangeNotifier {
@@ -20,9 +18,9 @@ class DriverListProvider extends ChangeNotifier {
   }
 
   Future<void> getDrivers() async {
-    availableDrivers = await OrdersRepository.getDrivers();
+    availableDrivers =
+        await OrdersRepository.getDrivers("613b525a9547087c44a8247b");
     loading = false;
-    print("AD are $availableDrivers");
     notifyListeners();
   }
 
@@ -30,5 +28,13 @@ class DriverListProvider extends ChangeNotifier {
     await Future.delayed(Duration(seconds: 1));
     loading = false;
     notifyListeners();
+  }
+
+  // if clicking on driver assignment, but he's now already inactive
+  void removeDriverAndGetDrivers(Driver driver) {
+    loading = true;
+    notifyListeners();
+    availableDrivers.removeWhere((element) => element.id == driver.id);
+    this.getDrivers();
   }
 }

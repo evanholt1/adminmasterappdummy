@@ -11,7 +11,7 @@ class Driver extends Equatable {
         this.phoneNumber = json['phone_number'];
 
   static listFromJson(List json) =>
-      json.map((e) => Driver.fromJson(e)).toList(growable: false);
+      json.map((e) => Driver.fromJson(e)).toList();
 
   @override
   List<Object?> get props => [id];

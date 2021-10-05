@@ -35,5 +35,6 @@
     "english_name": "name - English",
     "arabic_name": "name - Arabic",
     "english_desc": "Description - English",
-    "arabic_desc": "Description - Arabic"
+    "arabic_desc": "Description - Arabic",
+    "driver_became_unavailable":"That Driver Has Become Unavailable! Choose Another Driver!"
 }

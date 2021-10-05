@@ -54,12 +54,14 @@ class OrdersRepository {
       throw res.body;
   }
 
-  static Future<void> assignDriver(String orderId, String driverId) async {
+  static Future<bool> assignDriver(String orderId, String driverId) async {
     final payload = {"order": orderId, "driver": driverId};
     final res =
         await RestApiService.post(ApiPaths.assignDriver, jsonEncode(payload));
     if (res.statusCode == 201)
-      return;
+      return true;
+    else if (res.statusCode == 409)
+      return false;
     else
       throw res.body;
   }
@@ -74,8 +76,10 @@ class OrdersRepository {
       throw res.body;
   }
 
-  static Future<List<Driver>> getDrivers() async {
-    final res = await RestApiService.get(ApiPaths.availableDrivers);
+  static Future<List<Driver>> getDrivers(String branchId) async {
+    final queryParams = {'branchId': branchId};
+    final res =
+        await RestApiService.get(ApiPaths.availableDrivers, queryParams);
 
     if (res.statusCode == 200) {
       return Driver.listFromJson(jsonDecode(res.body) as List);

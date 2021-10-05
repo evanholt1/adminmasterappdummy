@@ -47,10 +47,16 @@ class Order extends ChangeNotifier with EquatableMixin {
     required this.status,
   });
 
-  void assignDriver(Driver driver) async {
-    await OrdersRepository.assignDriver(this.id, driver.id);
-    this.driver = driver;
-    notifyListeners();
+  Future<bool> assignDriver(Driver driver) async {
+    final assignmentSucceeded =
+        await OrdersRepository.assignDriver(this.id, driver.id);
+    print('assign result is $assignmentSucceeded');
+    if (assignmentSucceeded) {
+      this.driver = driver;
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
   void clearDriver() async {

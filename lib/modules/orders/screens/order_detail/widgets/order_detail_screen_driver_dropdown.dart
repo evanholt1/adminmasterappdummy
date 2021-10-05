@@ -2,6 +2,7 @@ import 'package:admin_eshop/Models/driver.dart';
 import 'package:admin_eshop/config/themes/base_theme_colors.dart';
 import 'package:admin_eshop/modules/orders/models/order.dart';
 import 'package:admin_eshop/modules/orders/providers/driver_list_provider.dart';
+import 'package:admin_eshop/modules/orders/providers/order_list_provider.dart';
 import 'package:custom_searchable_dropdown/custom_searchable_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -46,8 +47,15 @@ class OrderDetailScreenDriverDropdown extends StatelessWidget {
                     dropDownMenuItems: driverListP.availableDrivers
                         .map((item) => item.name)
                         .toList(),
-                    onChanged: (value) {
-                      if (value != null) order.assignDriver(value as Driver);
+                    onChanged: (value) async {
+                      if (value != null) {
+                        final result =
+                            await order.assignDriver(value as Driver);
+                        if (!result) {
+                          _showUnavailableDriverSnackbar(context);
+                          driverListP.removeDriverAndGetDrivers(value);
+                        }
+                      }
                       //return this.order.assignDriver(value as VendorDriver);
                     },
                   ),
@@ -86,5 +94,16 @@ class OrderDetailScreenDriverDropdown extends StatelessWidget {
     final index = driverListP.availableDrivers.indexOf(order.driver!);
     if (index != -1) return index;
     return null;
+  }
+
+  _showUnavailableDriverSnackbar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context)!.driver_became_unavailable,
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
   }
 }

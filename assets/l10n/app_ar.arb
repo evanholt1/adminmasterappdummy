@@ -35,5 +35,6 @@
     "english_name": "الاسم - انجليزي",
     "arabic_name": "الاسم - عربي",
     "english_desc": "الوصف - انجليزي",
-    "arabic_desc": "الوصف - عربي"
+    "arabic_desc": "الوصف - عربي",
+    "driver_became_unavailable":"هذا السائق اصبح غير متاحا! اختر سائقا اخرا!"
 }
